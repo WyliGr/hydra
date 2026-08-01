@@ -84,7 +84,7 @@ class HydraWidgetProvider : AppWidgetProvider() {
         // Title with status
         if (progress >= 100) {
             views.setTextViewText(R.id.widget_title, "HYDRA · DONE")
-        } else if (debtMl > 0 && todayMl < goal) {
+        } else if (debtMl > 0 && todayMl < goalMl) {
             views.setTextViewText(R.id.widget_title, "HYDRA · DEBT")
         }
 
