@@ -67,7 +67,7 @@ class HydraWidgetProvider : AppWidgetProvider() {
         val views = RemoteViews(context.packageName, R.layout.hydra_widget)
 
         // Progress bar
-        views.setProgressBar(R.id.widget_progress, 100, progress, 0)
+        views.setProgressBar(R.id.widget_progress, 100, progress, false)
 
         // Amount text
         val amountText = "${formatMl(todayMl)} / ${formatMl(effectiveGoal)}"
