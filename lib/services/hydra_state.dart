@@ -17,6 +17,7 @@ class HydraState extends ChangeNotifier {
   List<DailyTotal> _last7Days = [];
   UserProfile _profile = const UserProfile();
   Streak _streak = Streak.empty;
+  bool _onboardingDone = false;
 
   bool get ready => _ready;
   int get todayWaterMl => _todayWaterMl;
@@ -28,6 +29,7 @@ class HydraState extends ChangeNotifier {
   int get currentStreak => _streak.currentStreak;
   int get longestStreak => _streak.longestStreak;
   List<bool> get streakHistory => _streak.history;
+  bool get hasCompletedOnboarding => _onboardingDone;
 
   /// Total goal = base goal + water debt from uncompensated drinks.
   int get effectiveGoalMl => _dailyGoalMl + _waterDebtMl;
@@ -50,6 +52,7 @@ class HydraState extends ChangeNotifier {
     _last7Days = _storage.getLast7Days();
     _profile = _storage.getProfile();
     _streak = _storage.getStreakData();
+    _onboardingDone = _storage.hasCompletedOnboarding;
   }
 
   /// Re-read everything from storage and notify listeners. Used after
@@ -116,6 +119,13 @@ class HydraState extends ChangeNotifier {
     if (profile.autoGoal) {
       await _storage.setDailyGoalMl(profile.recommendedDailyMl);
     }
+    _refresh();
+    notifyListeners();
+  }
+
+  /// Complete onboarding — persist flag and trigger refresh.
+  Future<void> completeOnboarding() async {
+    await _storage.setOnboardingDone(true);
     _refresh();
     notifyListeners();
   }
