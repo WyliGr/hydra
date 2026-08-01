@@ -314,13 +314,12 @@ class _StreakGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (history.isEmpty) {
-      Text(
+      return Text(
         'NO HISTORY',
         style: HydraTheme.label.copyWith(
           color: HydraTheme.textTertiary,
         ),
       );
-      return const SizedBox.shrink();
     }
 
     final now = DateTime.now();

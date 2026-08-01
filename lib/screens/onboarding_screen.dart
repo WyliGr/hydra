@@ -86,6 +86,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
 
     await widget.state.completeOnboarding();
+    if (!mounted) return;
     widget.onCompleted();
   }
 

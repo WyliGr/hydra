@@ -37,15 +37,27 @@ class _WaterBottleState extends State<WaterBottle>
       parent: _animController,
       curve: Curves.easeOutCubic,
     );
-    _animController.value = widget.progress;
+    _animController.value = _safeProgress(widget.progress);
   }
 
   @override
   void didUpdateWidget(WaterBottle oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.progress != widget.progress) {
-      _animController.animateTo(widget.progress);
+      final target = _safeProgress(widget.progress);
+      if (_animController.value != target) {
+        _animController.animateTo(target);
+      }
     }
+  }
+
+  /// Normalises [v] into a finite value within [0.0, 1.0].
+  ///
+  /// `AnimationController.animateTo` throws if the target is NaN or
+  /// outside [lowerBound, upperBound], so we guard here.
+  double _safeProgress(double v) {
+    if (v.isNaN || v.isInfinite) return 0.0;
+    return v.clamp(0.0, 1.0);
   }
 
   @override
