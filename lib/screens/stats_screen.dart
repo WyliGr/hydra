@@ -78,6 +78,37 @@ class StatsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
+                  // Streak section
+                  const Text(
+                    'Série',
+                    style: TextStyle(
+                      color: HydraTheme.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _StatCard(
+                        label: 'Série actuelle',
+                        value: '${state.currentStreak} 🔥',
+                        icon: Icons.local_fire_department,
+                        color: HydraTheme.warning,
+                      ),
+                      const SizedBox(width: 12),
+                      _StatCard(
+                        label: 'Plus longue',
+                        value: '${state.longestStreak}',
+                        icon: Icons.emoji_events,
+                        color: HydraTheme.success,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _StreakGrid(history: state.streakHistory),
+                  const SizedBox(height: 32),
+
                   // Bar chart
                   const Text(
                     '7 derniers jours',
@@ -281,6 +312,80 @@ class _LegendDot extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(color: HydraTheme.textSecondary, fontSize: 12),
+        ),
+      ],
+    );
+  }
+}
+
+class _StreakGrid extends StatelessWidget {
+  final List<bool> history;
+  const _StreakGrid({required this.history});
+
+  @override
+  Widget build(BuildContext context) {
+    if (history.isEmpty) {
+      return const Text(
+        'Pas encore d\'historique.',
+        style: TextStyle(color: HydraTheme.textSecondary, fontSize: 13),
+      );
+    }
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '30 derniers jours',
+          style: TextStyle(
+            color: HydraTheme.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const cols = 10;
+            const spacing = 4.0;
+            final cellSize = (constraints.maxWidth - spacing * (cols - 1)) / cols;
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: List.generate(history.length, (i) {
+                final hit = history[i];
+                final day = today.subtract(Duration(days: history.length - 1 - i));
+                return Tooltip(
+                  message: '${day.day}/${day.month} • ${hit ? 'Objectif atteint' : 'Manqué'}',
+                  child: Container(
+                    width: cellSize,
+                    height: cellSize,
+                    decoration: BoxDecoration(
+                      color: hit ? HydraTheme.success : HydraTheme.surfaceLight,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: hit
+                            ? HydraTheme.success.withOpacity(0.6)
+                            : HydraTheme.textSecondary.withOpacity(0.2),
+                        width: 0.5,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            _LegendDot(color: HydraTheme.success, label: 'Atteint'),
+            const SizedBox(width: 12),
+            _LegendDot(color: HydraTheme.surfaceLight, label: 'Manqué'),
+          ],
         ),
       ],
     );

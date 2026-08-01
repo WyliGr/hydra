@@ -54,6 +54,10 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 children: [
+                  if (s.currentStreak > 0) ...[
+                    _StreakBadge(days: s.currentStreak),
+                    const SizedBox(height: 16),
+                  ],
                   // Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -191,6 +195,41 @@ class _StatusMessage extends StatelessWidget {
         fontWeight: FontWeight.w600,
       ),
       textAlign: TextAlign.center,
+    );
+  }
+}
+
+class _StreakBadge extends StatelessWidget {
+  final int days;
+  const _StreakBadge({required this.days});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.center,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: HydraTheme.surfaceLight,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: HydraTheme.warning.withOpacity(0.5)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🔥', style: TextStyle(fontSize: 18)),
+            const SizedBox(width: 6),
+            Text(
+              '$days jour${days > 1 ? 's' : ''}',
+              style: const TextStyle(
+                color: HydraTheme.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

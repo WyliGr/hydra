@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/water_log.dart';
 import '../models/drink_ratio.dart';
 import '../models/user_profile.dart';
+import '../models/streak.dart';
 
 /// Central storage service using SharedPreferences + JSON encoding.
 class StorageService {
@@ -100,6 +101,89 @@ class StorageService {
 
   Future<void> setDailyGoalMl(int ml) async {
     await _prefs.setInt(_dailyGoalKey, ml);
+  }
+
+  // ── Streak ──────────────────────────────────────────────────
+
+  /// Encodes a date as an int key (yyyymmdd) so map lookups are value-based.
+  static int _dayKey(DateTime d) => d.year * 10000 + d.month * 100 + d.day;
+
+  /// Decodes a [dayKey] back to a [DateTime] (00:00 local).
+  static DateTime _fromDayKey(int key) =>
+      DateTime(key ~/ 10000, (key ~/ 100) % 100, key % 100);
+
+  /// Returns the current streak, longest streak, and the last 30 days
+  /// of goal-hit history (oldest first, length 30).
+  Streak getStreakData() {
+    final goal = getDailyGoalMl();
+    final logs = getWaterLogs();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final totalsByDay = <int, int>{};
+    for (final log in logs) {
+      final t = log.timestamp;
+      final key = _dayKey(DateTime(t.year, t.month, t.day));
+      totalsByDay[key] = (totalsByDay[key] ?? 0) + log.amountMl;
+    }
+
+    final hitByDay = <int, bool>{};
+    for (final entry in totalsByDay.entries) {
+      hitByDay[entry.key] = entry.value >= goal;
+    }
+
+    final todayKey = _dayKey(today);
+    final history = <bool>[];
+    for (var i = 29; i >= 0; i--) {
+      final dayKey = _dayKey(today.subtract(Duration(days: i)));
+      history.add(hitByDay[dayKey] ?? false);
+    }
+
+    bool hitAt(int key) => hitByDay[key] == true;
+
+    int current = 0;
+    if (hitAt(todayKey)) {
+      var back = 0;
+      while (hitAt(_dayKey(today.subtract(Duration(days: back))))) {
+        current++;
+        back++;
+      }
+    } else {
+      var back = 1;
+      if (hitAt(_dayKey(today.subtract(Duration(days: back))))) {
+        current = 1;
+        back = 2;
+        while (hitAt(_dayKey(today.subtract(Duration(days: back))))) {
+          current++;
+          back++;
+        }
+      }
+    }
+
+    int longest = 0;
+    int run = 0;
+    DateTime? prev;
+    final sortedKeys = hitByDay.keys.toList()..sort();
+    for (final key in sortedKeys) {
+      if (!hitAt(key)) continue;
+      final day = _fromDayKey(key);
+      final isConsecutive =
+          prev != null && day.difference(prev).inDays == 1;
+      if (!isConsecutive) {
+        run = 1;
+      } else {
+        run++;
+      }
+      if (run > longest) longest = run;
+      prev = day;
+    }
+    if (current > longest) longest = current;
+
+    return Streak(
+      currentStreak: current,
+      longestStreak: longest,
+      history: history,
+    );
   }
 
   // ── Today helpers ───────────────────────────────────────────
