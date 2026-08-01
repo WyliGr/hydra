@@ -1,4 +1,4 @@
-# 💧 Hydra
+# HYDRA
 
 > Water tracker with drink ratio regulator & homescreen widget.
 > Built with Flutter.
@@ -16,30 +16,30 @@ Hydra is a water tracking app that combines two concepts:
 - Tap the widget on your home screen to instantly log water
 - 7-day stats with bar chart and goal line
 
-### 2. Régulateur — Drink ratio compensation
+### 2. Regulator — Drink ratio compensation
 When you log a sugary or caffeinated drink, Hydra calculates how much water
 you need to drink to compensate, based on ratios:
 
-| Drink | Volume | Ratio (water:drink) | Water to compensate |
-|-------|--------|---------------------|---------------------|
-| 🥤 Coca-Cola | 330ml | 2:1 | 660ml |
-| ⚡ Holy | 330ml | 3:1 | 990ml |
-| 🐂 Red Bull | 250ml | 3:1 | 750ml |
-| ☕ Café | 120ml | 2.5:1 | 300ml |
-| 🍵 Thé | 250ml | 1.5:1 | 375ml |
-| 🧃 Jus | 250ml | 1:1 | 250ml |
-| 🍺 Bière | 330ml | 2:1 | 660ml |
+| Drink      | Volume | Ratio (water:drink) | Water to compensate |
+|------------|--------|---------------------|---------------------|
+| Coca-Cola  | 330ml  | 2:1                 | 660ml               |
+| Holy       | 330ml  | 3:1                 | 990ml               |
+| Red Bull   | 250ml  | 3:1                 | 750ml               |
+| Coffee     | 120ml  | 2.5:1               | 300ml               |
+| Tea        | 250ml  | 1.5:1               | 375ml               |
+| Juice      | 250ml  | 1:1                 | 250ml               |
+| Beer       | 330ml  | 2:1                 | 660ml               |
 
 Uncompensated drinks create a **water debt** that's added to your daily goal.
 
 ## Features
 
-- 📱 **Homescreen widget** — shows progress + tap to add 25cl
-- 📊 **7-day stats** — bar chart, goal line, average, best day
-- 🔔 **Smart reminders** — configurable interval notifications
-- 🎯 **Auto goal** — calculates from body weight (35ml/kg)
-- 🌊 **Water debt tracking** — never skip compensation
-- 🎨 **Dark theme** — ocean blue aesthetic
+- **Homescreen widget** — shows progress + tap to add 25cl
+- **7-day stats** — bar chart, goal line, average, best day
+- **Smart reminders** — configurable interval notifications
+- **Auto goal** — calculates from body weight (35ml/kg)
+- **Water debt tracking** — never skip compensation
+- **Nothing OS theme** — monochrome black + red, dot matrix aesthetic
 
 ## Getting Started
 

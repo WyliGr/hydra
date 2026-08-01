@@ -39,8 +39,8 @@ class NotificationService {
   static Future<void> scheduleReminder({
     required int startHour,
     required int intervalHours,
-    String title = '💧 Hydra',
-    String body = 'C\'est l\'heure de boire de l\'eau !',
+    String title = 'HYDRA',
+    String body = 'Time to drink water.',
   }) async {
     await _plugin.cancelAll();
 
@@ -85,7 +85,7 @@ class NotificationService {
 
   /// Send an immediate notification (e.g. when logging a drink → debt alert).
   static Future<void> showInstant({
-    String title = '💧 Hydra',
+    String title = 'HYDRA',
     required String body,
   }) async {
     await _plugin.show(

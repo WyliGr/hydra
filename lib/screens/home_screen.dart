@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/hydra_state.dart';
-import '../models/water_log.dart';
 import '../models/drink_ratio.dart';
 import '../utils/theme.dart';
 import '../utils/format.dart';
@@ -33,7 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onStateChanged() {
     if (!mounted) return;
-    // Push to widget
     WidgetService.updateWidget(
       todayMl: widget.state.todayWaterMl,
       goalMl: widget.state.dailyGoalMl,
@@ -49,63 +47,88 @@ class _HomeScreenState extends State<HomeScreen> {
       listenable: s,
       builder: (context, _) {
         return Scaffold(
+          backgroundColor: HydraTheme.background,
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (s.currentStreak > 0) ...[
-                    _StreakBadge(days: s.currentStreak),
-                    const SizedBox(height: 16),
-                  ],
-                  // Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  // Header — HYDRA + thin line
+                  Text('HYDRA', style: HydraTheme.displayMedium),
+                  const SizedBox(height: 8),
+                  const Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: HydraTheme.border,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'TRACK WATER. COMPENSATE DRINKS.',
+                    style: HydraTheme.label,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Streak badge (red Space Mono, no emoji)
+                  if (s.currentStreak > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Row(
                         children: [
-                          Text(
-                            'Hydra',
-                            style: TextStyle(
-                              color: HydraTheme.textPrimary,
-                              fontSize: 28,
-                              fontWeight: FontWeight.w800,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: HydraTheme.accent,
+                                width: 1,
+                              ),
                             ),
-                          ),
-                          Text(
-                            'Bois. Compense. Répète.',
-                            style: TextStyle(
-                              color: HydraTheme.textSecondary,
-                              fontSize: 13,
+                            child: Text(
+                              'STREAK ${s.currentStreak}',
+                              style: HydraTheme.dataRed.copyWith(fontSize: 11),
                             ),
                           ),
                         ],
                       ),
-                      if (s.baseProgress >= 1.0)
-                        const Icon(Icons.emoji_events, color: HydraTheme.success, size: 32)
-                      else if (s.waterDebtMl > 0)
-                        const Icon(Icons.warning_amber_rounded, color: HydraTheme.warning, size: 32)
-                      else
-                        const Icon(Icons.water_drop, color: HydraTheme.primary, size: 32),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
+                    ),
 
                   // Bottle
-                  WaterBottle(
-                    progress: s.progress,
-                    currentMl: s.todayWaterMl,
-                    goalMl: s.dailyGoalMl,
-                    debtMl: s.waterDebtMl,
+                  Center(
+                    child: WaterBottle(
+                      progress: s.progress,
+                      currentMl: s.todayWaterMl,
+                      goalMl: s.dailyGoalMl,
+                      debtMl: s.waterDebtMl,
+                    ),
                   ),
                   const SizedBox(height: 16),
 
-                  // Remaining / status message
+                  // Debt indicator (thin red box)
+                  if (s.waterDebtMl > 0)
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 5),
+                        decoration: BoxDecoration(
+                          border:
+                              Border.all(color: HydraTheme.accent, width: 1),
+                        ),
+                        child: Text(
+                          '+${_fmtMl(s.waterDebtMl)} DEBT',
+                          style: HydraTheme.dataRed.copyWith(fontSize: 11),
+                        ),
+                      ),
+                    ),
+
+                  // Status text (grey, no emoji)
                   _StatusMessage(
                     progress: s.baseProgress,
                     remainingMl: s.remainingMl,
                     debtMl: s.waterDebtMl,
+                    currentMl: s.todayWaterMl,
+                    goalMl: s.dailyGoalMl,
                   ),
                   const SizedBox(height: 24),
 
@@ -115,32 +138,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   // Undo last
                   if (s.todayWaterMl > 0)
-                    TextButton.icon(
+                    TextButton(
                       onPressed: s.removeLastWaterLog,
-                      icon: const Icon(Icons.undo, size: 16, color: HydraTheme.textSecondary),
-                      label: const Text(
-                        'Annuler le dernier',
-                        style: TextStyle(color: HydraTheme.textSecondary, fontSize: 13),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'UNDO LAST',
+                        style: HydraTheme.label,
                       ),
                     ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 28),
 
-                  // Drink Regulator
+                  // Regulator
                   DrinkRegulatorCard(
                     todayDrinks: s.todayDrinks,
                     onLogDrink: (drink) async {
                       await s.logDrink(drink);
                       NotificationService.showInstant(
-                        title: '⚡ Régulateur',
+                        title: 'REGULATOR',
                         body:
-                            '${drink.name} loggué ! Bois ${FormatUtil.ml(drink.requiredWaterMl)} d\'eau pour compenser.',
+                            '${drink.name} logged. Drink ${FormatUtil.ml(drink.requiredWaterMl)} to compensate.',
                       );
                     },
                     onCompensate: s.compensateDrink,
                   ),
 
-                  const SizedBox(height: 100), // bottom nav padding
+                  const SizedBox(height: 80),
                 ],
               ),
             ),
@@ -149,17 +176,28 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
+
+  static String _fmtMl(int ml) {
+    if (ml >= 1000) {
+      return '${(ml / 1000).toStringAsFixed(1)}L';
+    }
+    return '${ml}ML';
+  }
 }
 
 class _StatusMessage extends StatelessWidget {
   final double progress;
   final int remainingMl;
   final int debtMl;
+  final int currentMl;
+  final int goalMl;
 
   const _StatusMessage({
     required this.progress,
     required this.remainingMl,
     required this.debtMl,
+    required this.currentMl,
+    required this.goalMl,
   });
 
   @override
@@ -168,68 +206,40 @@ class _StatusMessage extends StatelessWidget {
     Color color;
 
     if (progress >= 1.0) {
-      message = 'Objectif atteint ! 🎉';
-      color = HydraTheme.success;
+      message = 'GOAL COMPLETE';
+      color = HydraTheme.textPrimary;
     } else if (debtMl > 0 && progress < 0.5) {
-      message = 'Plus que ${FormatUtil.ml(remainingMl)} (dont ${FormatUtil.ml(debtMl)} de dette)';
-      color = HydraTheme.warning;
+      message =
+          '${_fmtMl(remainingMl)} REMAINING (${_fmtMl(debtMl)} DEBT)';
+      color = HydraTheme.textSecondary;
     } else if (debtMl > 0) {
-      message = 'Plus que ${FormatUtil.ml(remainingMl)} — n\'oublie pas la dette d\'eau';
-      color = HydraTheme.warning;
+      message = '${_fmtMl(remainingMl)} REMAINING — INCL. DEBT';
+      color = HydraTheme.textSecondary;
     } else if (progress >= 0.75) {
-      message = 'Presque ! Plus que ${FormatUtil.ml(remainingMl)}';
-      color = HydraTheme.primary;
+      message = '${_fmtMl(remainingMl)} REMAINING';
+      color = HydraTheme.textSecondary;
     } else if (progress >= 0.5) {
-      message = 'Bon rythme ! ${FormatUtil.ml(remainingMl)} restants';
-      color = HydraTheme.primary;
+      message = '${_fmtMl(remainingMl)} REMAINING';
+      color = HydraTheme.textSecondary;
     } else {
-      message = 'Plus que ${FormatUtil.ml(remainingMl)} à boire';
+      message = '${_fmtMl(remainingMl)} REMAINING';
       color = HydraTheme.textSecondary;
     }
 
     return Text(
       message,
-      style: TextStyle(
+      style: HydraTheme.label.copyWith(
         color: color,
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
+        fontSize: 12,
+        letterSpacing: 2.0,
       ),
-      textAlign: TextAlign.center,
     );
   }
-}
 
-class _StreakBadge extends StatelessWidget {
-  final int days;
-  const _StreakBadge({required this.days});
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.center,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: HydraTheme.surfaceLight,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: HydraTheme.warning.withOpacity(0.5)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('🔥', style: TextStyle(fontSize: 18)),
-            const SizedBox(width: 6),
-            Text(
-              '$days jour${days > 1 ? 's' : ''}',
-              style: const TextStyle(
-                color: HydraTheme.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  static String _fmtMl(int ml) {
+    if (ml >= 1000) {
+      return '${(ml / 1000).toStringAsFixed(1)}L';
+    }
+    return '${ml}ML';
   }
 }

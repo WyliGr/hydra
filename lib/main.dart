@@ -71,9 +71,16 @@ class _RootRouterState extends State<_RootRouter> {
   Widget build(BuildContext context) {
     if (!widget.state.ready) {
       return const Scaffold(
-        backgroundColor: HydraTheme.surface,
+        backgroundColor: HydraTheme.background,
         body: Center(
-          child: CircularProgressIndicator(color: HydraTheme.primary),
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              color: HydraTheme.textPrimary,
+              strokeWidth: 1.5,
+            ),
+          ),
         ),
       );
     }
@@ -102,6 +109,8 @@ class HydraNav extends StatefulWidget {
 class _HydraNavState extends State<HydraNav> {
   int _index = 0;
 
+  static const _tabs = ['HOME', 'STATS', 'SETTINGS'];
+
   @override
   Widget build(BuildContext context) {
     final screens = [
@@ -111,31 +120,57 @@ class _HydraNavState extends State<HydraNav> {
     ];
 
     return Scaffold(
+      backgroundColor: HydraTheme.background,
       body: IndexedStack(
         index: _index,
         children: screens,
       ),
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: HydraTheme.surface,
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.water_drop_outlined),
-            selectedIcon: Icon(Icons.water_drop),
-            label: 'Accueil',
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: HydraTheme.background,
+          border: Border(
+            top: BorderSide(color: HydraTheme.border, width: 1),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart_outlined),
-            selectedIcon: Icon(Icons.bar_chart),
-            label: 'Stats',
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 56,
+            child: Row(
+              children: List.generate(_tabs.length, (i) {
+                final active = i == _index;
+                return Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => setState(() => _index = i),
+                    child: Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(
+                            color:
+                                active ? HydraTheme.textPrimary : Colors.transparent,
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        _tabs[i],
+                        style: HydraTheme.label.copyWith(
+                          color: active
+                              ? HydraTheme.textPrimary
+                              : HydraTheme.textTertiary,
+                          fontSize: 11,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Réglages',
-          ),
-        ],
+        ),
       ),
     );
   }

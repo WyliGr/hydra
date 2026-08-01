@@ -4,6 +4,7 @@ import '../utils/theme.dart';
 import '../utils/format.dart';
 
 /// Shows today's logged drinks with their water debt and compensation status.
+/// Nothing OS: text chips, no emojis, no filled backgrounds, hairline borders.
 class DrinkRegulatorCard extends StatelessWidget {
   final List<DrinkLog> todayDrinks;
   final void Function(DrinkType drink) onLogDrink;
@@ -23,107 +24,108 @@ class DrinkRegulatorCard extends StatelessWidget {
         .fold(0, (sum, e) => sum + e.requiredWaterMl);
 
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: HydraTheme.surfaceLight,
-        borderRadius: BorderRadius.circular(20),
+        color: HydraTheme.surface,
+        border: Border.all(color: HydraTheme.border, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Row(
-                children: [
-                  Icon(Icons.balance, color: HydraTheme.warning, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'Régulateur',
-                    style: TextStyle(
-                      color: HydraTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('REGULATOR', style: HydraTheme.titleUpper),
+                if (totalDebt > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: HydraTheme.accent,
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      '+${FormatUtil.ml(totalDebt)} DEBT',
+                      style: HydraTheme.dataRed.copyWith(fontSize: 10),
                     ),
                   ),
-                ],
-              ),
-              if (totalDebt > 0)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: HydraTheme.warning.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    'Dette: ${FormatUtil.ml(totalDebt)}',
-                    style: const TextStyle(
-                      color: HydraTheme.warning,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          // Quick drink log buttons
+          const Divider(height: 1, thickness: 1, color: HydraTheme.border),
+
+          // Quick log drink buttons
           SizedBox(
-            height: 52,
+            height: 48,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               itemCount: DrinkPresets.all.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (context, i) {
                 final drink = DrinkPresets.all[i];
                 return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: () => onLogDrink(drink),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: HydraTheme.surface,
-                      borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: HydraTheme.warning.withValues(alpha: 0.2),
+                        color: HydraTheme.borderStrong,
+                        width: 1,
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Text(drink.emoji, style: const TextStyle(fontSize: 20)),
-                        const SizedBox(width: 6),
-                        Text(
-                          drink.name,
-                          style: const TextStyle(
-                            color: HydraTheme.textSecondary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      drink.name.toUpperCase(),
+                      style: HydraTheme.body.copyWith(
+                        fontSize: 11,
+                        letterSpacing: 1.2,
+                        color: HydraTheme.textPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 );
               },
             ),
           ),
-          const SizedBox(height: 16),
-          // Today's logged drinks
+          const Divider(height: 1, thickness: 1, color: HydraTheme.border),
+
+          // Today's drink log list
           if (todayDrinks.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 18),
               child: Text(
-                'Aucune boisson sucrée/cafétinée aujourd\'hui. C\'est parfait ! 💪',
-                style: TextStyle(color: HydraTheme.textSecondary, fontSize: 13),
+                'NO LOGGED DRINKS TODAY',
+                style: HydraTheme.label.copyWith(
+                  color: HydraTheme.textTertiary,
+                ),
               ),
             )
           else
-            ...todayDrinks.map((d) {
+            ...List.generate(todayDrinks.length, (i) {
+              final d = todayDrinks[i];
               final drinkType = DrinkPresets.byId(d.drinkTypeId);
-              return _DrinkLogTile(
-                drinkLog: d,
-                emoji: drinkType?.emoji ?? '🥤',
-                name: drinkType?.name ?? d.drinkTypeId,
-                onCompensate: () => onCompensate(d.id),
+              return Column(
+                children: [
+                  _DrinkLogTile(
+                    drinkLog: d,
+                    name: drinkType?.name ?? d.drinkTypeId,
+                    onCompensate: () => onCompensate(d.id),
+                  ),
+                  if (i < todayDrinks.length - 1)
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: HydraTheme.border,
+                    ),
+                ],
               );
             }),
         ],
@@ -134,13 +136,11 @@ class DrinkRegulatorCard extends StatelessWidget {
 
 class _DrinkLogTile extends StatelessWidget {
   final DrinkLog drinkLog;
-  final String emoji;
   final String name;
   final VoidCallback onCompensate;
 
   const _DrinkLogTile({
     required this.drinkLog,
-    required this.emoji,
     required this.name,
     required this.onCompensate,
   });
@@ -148,51 +148,54 @@ class _DrinkLogTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 24)),
-          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
-                  style: const TextStyle(
+                  name.toUpperCase(),
+                  style: HydraTheme.body.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.8,
                     color: HydraTheme.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
-                  '${FormatUtil.ml(drinkLog.volumeMl)} → ${FormatUtil.ml(drinkLog.requiredWaterMl)} d\'eau ${drinkLog.waterRatio.toStringAsFixed(1)}:1',
-                  style: const TextStyle(
-                    color: HydraTheme.textSecondary,
-                    fontSize: 12,
-                  ),
+                  '${FormatUtil.ml(drinkLog.volumeMl)} · '
+                  '${drinkLog.waterRatio.toStringAsFixed(1)}:1 → '
+                  '${FormatUtil.ml(drinkLog.requiredWaterMl)}',
+                  style: HydraTheme.bodySecondary.copyWith(fontSize: 11),
                 ),
               ],
             ),
           ),
           if (drinkLog.compensated)
-            const Icon(Icons.check_circle, color: HydraTheme.success, size: 22)
+            Text(
+              'DONE',
+              style: HydraTheme.dataRed.copyWith(
+                color: HydraTheme.textPrimary,
+                fontSize: 11,
+              ),
+            )
           else
             GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: onCompensate,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: HydraTheme.warning.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: HydraTheme.accent, width: 1),
                 ),
-                child: const Text(
-                  'Compenser',
-                  style: TextStyle(
-                    color: HydraTheme.warning,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Text(
+                  'COMPENSATE',
+                  style: HydraTheme.dataRed.copyWith(fontSize: 10),
                 ),
               ),
             ),

@@ -92,30 +92,39 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: HydraTheme.surface,
+      backgroundColor: HydraTheme.background,
       body: SafeArea(
         child: Column(
           children: [
-            // Skip / progress header
+            // Top bar — skip / back
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: Row(
                 children: [
                   if (_page > 0)
-                    IconButton(
-                      onPressed: _back,
-                      icon: const Icon(Icons.arrow_back,
-                          color: HydraTheme.textSecondary),
+                    GestureDetector(
+                      onTap: _back,
+                      behavior: HitTestBehavior.opaque,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text('BACK', style: HydraTheme.label),
+                      ),
                     )
                   else
-                    const SizedBox(width: 48),
+                    const SizedBox(width: 60),
                   const Spacer(),
                   if (_page < 2)
-                    TextButton(
-                      onPressed: _finish,
-                      child: const Text(
-                        'Passer',
-                        style: TextStyle(color: HydraTheme.textSecondary),
+                    GestureDetector(
+                      onTap: _finish,
+                      behavior: HitTestBehavior.opaque,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          'SKIP',
+                          style: HydraTheme.label.copyWith(
+                            color: HydraTheme.textSecondary,
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -153,13 +162,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   _PageDots(count: 3, current: _page),
                   const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: _page == 1 && _weightKg == null
-                          ? null
-                          : _next,
-                      child: Text(_page < 2 ? 'Continuer' : 'C\'est parti !'),
+                  GestureDetector(
+                    onTap: (_page == 1 && _weightKg == null) ? null : _next,
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: HydraTheme.background,
+                        border: Border.all(
+                          color: (_page == 1 && _weightKg == null)
+                              ? HydraTheme.borderStrong
+                              : HydraTheme.textPrimary,
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        (_page < 2 ? 'CONTINUE' : "LET'S GO"),
+                        style: HydraTheme.body.copyWith(
+                          fontSize: 13,
+                          letterSpacing: 2.0,
+                          fontWeight: FontWeight.w500,
+                          color: (_page == 1 && _weightKg == null)
+                              ? HydraTheme.textTertiary
+                              : HydraTheme.textPrimary,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -182,54 +211,81 @@ class _WelcomePage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 160,
-            height: 160,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const RadialGradient(
-                colors: [HydraTheme.accent, HydraTheme.primary],
-                center: Alignment.center,
-                radius: 0.7,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: HydraTheme.primary.withValues(alpha: 0.4),
-                  blurRadius: 30,
-                  spreadRadius: 4,
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.water_drop,
-              size: 90,
-              color: Colors.white,
+          // Wireframe bottle (outline only)
+          SizedBox(
+            width: 140,
+            height: 220,
+            child: CustomPaint(
+              painter: _WireBottlePainter(),
             ),
           ),
           const SizedBox(height: 40),
-          const Text(
-            'Bienvenue sur Hydra 💧',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: HydraTheme.textPrimary,
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-            ),
+          Text('HYDRA', style: HydraTheme.displayLarge),
+          const SizedBox(height: 12),
+          const Divider(
+            height: 1,
+            thickness: 1,
+            color: HydraTheme.border,
+            indent: 60,
+            endIndent: 60,
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Tracker ta eau + compenser tes boissons',
+          Text(
+            'TRACK WATER.\nCOMPENSATE DRINKS.',
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: HydraTheme.label.copyWith(
+              fontSize: 12,
+              height: 1.8,
               color: HydraTheme.textSecondary,
-              fontSize: 16,
-              height: 1.4,
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class _WireBottlePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final centerX = w / 2;
+
+    final path = Path()
+      ..moveTo(centerX - 16, 8)
+      ..lineTo(centerX - 16, 28)
+      ..quadraticBezierTo(centerX - 24, 42, centerX - 32, 56)
+      ..lineTo(centerX - 32, h - 24)
+      ..quadraticBezierTo(centerX - 32, h - 12, centerX - 18, h - 12)
+      ..lineTo(centerX + 18, h - 12)
+      ..quadraticBezierTo(centerX + 32, h - 12, centerX + 32, h - 24)
+      ..lineTo(centerX + 32, 56)
+      ..quadraticBezierTo(centerX + 24, 42, centerX + 16, 28)
+      ..lineTo(centerX + 16, 8)
+      ..close();
+
+    final outline = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..color = HydraTheme.textPrimary;
+    canvas.drawPath(path, outline);
+
+    // Cap
+    final capRect = Rect.fromLTRB(centerX - 14, 4, centerX + 14, 14);
+    canvas.drawRect(capRect, outline);
+
+    // Hint dots
+    final dotPaint = Paint()..color = HydraTheme.borderStrong;
+    for (double y = 80; y < h - 20; y += 8) {
+      for (double x = centerX - 28; x <= centerX + 28; x += 8) {
+        canvas.drawCircle(Offset(x, y), 1.0, dotPaint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ── Page 2: Profile ──────────────────────────────────────────
@@ -252,110 +308,60 @@ class _ProfilePage extends StatelessWidget {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 40),
-          const Icon(Icons.fitness_center,
-              size: 64, color: HydraTheme.accent),
-          const SizedBox(height: 24),
-          const Text(
-            'Quel est ton poids ?',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: HydraTheme.textPrimary,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'On calcule ton objectif idéal avec ça.',
-            textAlign: TextAlign.center,
-            style:
-                TextStyle(color: HydraTheme.textSecondary, fontSize: 14),
-          ),
-          const SizedBox(height: 36),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            decoration: BoxDecoration(
-              color: HydraTheme.surfaceLight,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 120,
-                  child: TextField(
-                    controller: weightController,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    onChanged: onChanged,
-                    style: const TextStyle(
-                      color: HydraTheme.textPrimary,
-                      fontSize: 36,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
-                    ),
+          Text('WEIGHT', style: HydraTheme.label),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              SizedBox(
+                width: 140,
+                child: TextField(
+                  controller: weightController,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.left,
+                  onChanged: onChanged,
+                  style: HydraTheme.dataLarge,
+                  cursorColor: HydraTheme.textPrimary,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 4),
                   ),
                 ),
-                const SizedBox(width: 8),
-                const Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(
-                    'kg',
-                    style: TextStyle(
-                      color: HydraTheme.textSecondary,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                    ),
+              ),
+              const SizedBox(width: 6),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'KG',
+                  style: HydraTheme.label.copyWith(
+                    color: HydraTheme.textSecondary,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
           const SizedBox(height: 32),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: HydraTheme.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: HydraTheme.primary.withValues(alpha: 0.3),
-              ),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.flag, color: HydraTheme.primary, size: 28),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Ton objectif: $liters L/jour',
-                        style: const TextStyle(
-                          color: HydraTheme.textPrimary,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        '(35ml/kg)',
-                        style: TextStyle(
-                          color: HydraTheme.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          const Divider(
+            height: 1,
+            thickness: 1,
+            color: HydraTheme.border,
+          ),
+          const SizedBox(height: 24),
+          Text('GOAL', style: HydraTheme.label),
+          const SizedBox(height: 6),
+          Text(
+            '$liters L / DAY',
+            style: HydraTheme.dataMedium,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '(35ML/KG)',
+            style: HydraTheme.label.copyWith(
+              color: HydraTheme.textTertiary,
+              fontSize: 10,
             ),
           ),
         ],
@@ -384,123 +390,95 @@ class _ReminderPage extends StatelessWidget {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 40),
-          const Icon(Icons.notifications_active,
-              size: 64, color: HydraTheme.accent),
+          Text('REMINDERS', style: HydraTheme.label),
           const SizedBox(height: 24),
-          const Text(
-            'Rappels',
-            style: TextStyle(
-              color: HydraTheme.textPrimary,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Active des rappels pour ne jamais oublier de boire.',
-            textAlign: TextAlign.center,
-            style:
-                TextStyle(color: HydraTheme.textSecondary, fontSize: 14),
-          ),
-          const SizedBox(height: 32),
-          Container(
-            decoration: BoxDecoration(
-              color: HydraTheme.surfaceLight,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: SwitchListTile(
-              value: remindersEnabled,
-              activeColor: HydraTheme.primary,
-              title: const Text(
-                'Activer les rappels',
-                style: TextStyle(
-                    color: HydraTheme.textPrimary,
-                    fontWeight: FontWeight.w600),
-              ),
-              subtitle: Text(
-                remindersEnabled
-                    ? 'Tu recevras des notifications'
-                    : 'Aucune notification',
-                style: const TextStyle(
-                    color: HydraTheme.textSecondary, fontSize: 12),
-              ),
-              onChanged: onToggle,
-            ),
-          ),
-          const SizedBox(height: 20),
-          AnimatedOpacity(
-            opacity: remindersEnabled ? 1 : 0.4,
-            duration: const Duration(milliseconds: 200),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: HydraTheme.surfaceLight,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Intervalle',
-                    style: TextStyle(
-                      color: HydraTheme.textPrimary,
-                      fontWeight: FontWeight.w600,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('ENABLED', style: HydraTheme.body),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onToggle(!remindersEnabled),
+                child: Container(
+                  width: 44,
+                  height: 22,
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: HydraTheme.background,
+                    border: Border.all(
+                      color: remindersEnabled
+                          ? HydraTheme.accent
+                          : HydraTheme.borderStrong,
+                      width: 1,
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [1, 2, 3, 4].map((h) {
-                      final selected = interval == h;
-                      final disabled = !remindersEnabled;
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: GestureDetector(
-                            onTap: disabled
-                                ? null
-                                : () => onSelectInterval(h),
-                            child: Container(
-                              alignment: Alignment.center,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
-                              decoration: BoxDecoration(
-                                color: selected
-                                    ? HydraTheme.primary
-                                    : HydraTheme.surface,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: selected
-                                      ? HydraTheme.primary
-                                      : HydraTheme.surfaceLight,
-                                ),
-                              ),
-                              child: Text(
-                                '${h}h',
-                                style: TextStyle(
-                                  color: selected
-                                      ? Colors.white
-                                      : (disabled
-                                          ? HydraTheme.textSecondary
-                                              .withValues(alpha: 0.5)
-                                          : HydraTheme.textSecondary),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                  child: AnimatedAlign(
+                    duration: const Duration(milliseconds: 150),
+                    alignment: remindersEnabled
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      color: remindersEnabled
+                          ? HydraTheme.accent
+                          : HydraTheme.textTertiary,
+                    ),
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          const Divider(
+            height: 1,
+            thickness: 1,
+            color: HydraTheme.border,
+          ),
+          const SizedBox(height: 24),
+          Text('INTERVAL', style: HydraTheme.label),
+          const SizedBox(height: 14),
+          Row(
+            children: [1, 2, 3, 4].map((h) {
+              final selected = interval == h;
+              final disabled = !remindersEnabled;
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap:
+                        disabled ? null : () => onSelectInterval(h),
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: HydraTheme.background,
+                        border: Border.all(
+                          color: selected
+                              ? HydraTheme.accent
+                              : HydraTheme.borderStrong,
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        '${h}H',
+                        style: HydraTheme.dataSmall.copyWith(
+                          color: selected
+                              ? HydraTheme.accent
+                              : (disabled
+                                  ? HydraTheme.textTertiary
+                                  : HydraTheme.textPrimary),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -521,14 +499,21 @@ class _PageDots extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(count, (i) {
         final active = i == current;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+        return Container(
           margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: active ? 24 : 8,
+          width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: active ? HydraTheme.primary : HydraTheme.surfaceLight,
-            borderRadius: BorderRadius.circular(4),
+            color: active
+                ? HydraTheme.textPrimary
+                : HydraTheme.background,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: active
+                  ? HydraTheme.textPrimary
+                  : HydraTheme.textTertiary,
+              width: 1,
+            ),
           ),
         );
       }),

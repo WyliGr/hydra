@@ -34,17 +34,17 @@ class DrinkType {
       );
 }
 
-/// Preset drink types with ratios from our research.
-class DrinkPresets {
-  static const List<DrinkType> all = [
-    DrinkType(id: 'coca', name: 'Coca-Cola', emoji: '🥤', volumeMl: 330, waterRatio: 2.0),
-    DrinkType(id: 'holy', name: 'Holy', emoji: '⚡', volumeMl: 330, waterRatio: 3.0),
-    DrinkType(id: 'redbull', name: 'Red Bull', emoji: '🐂', volumeMl: 250, waterRatio: 3.0),
-    DrinkType(id: 'coffee', name: 'Café', emoji: '☕', volumeMl: 120, waterRatio: 2.5),
-    DrinkType(id: 'tea', name: 'Thé', emoji: '🍵', volumeMl: 250, waterRatio: 1.5),
-    DrinkType(id: 'juice', name: 'Jus', emoji: '🧃', volumeMl: 250, waterRatio: 1.0),
-    DrinkType(id: 'beer', name: 'Bière', emoji: '🍺', volumeMl: 330, waterRatio: 2.0),
-  ];
+  /// Preset drink types with ratios from our research.
+  class DrinkPresets {
+    static const List<DrinkType> all = [
+      DrinkType(id: 'coca', name: 'Coca-Cola', emoji: '', volumeMl: 330, waterRatio: 2.0),
+      DrinkType(id: 'holy', name: 'Holy', emoji: '', volumeMl: 330, waterRatio: 3.0),
+      DrinkType(id: 'redbull', name: 'Red Bull', emoji: '', volumeMl: 250, waterRatio: 3.0),
+      DrinkType(id: 'coffee', name: 'Coffee', emoji: '', volumeMl: 120, waterRatio: 2.5),
+      DrinkType(id: 'tea', name: 'Tea', emoji: '', volumeMl: 250, waterRatio: 1.5),
+      DrinkType(id: 'juice', name: 'Juice', emoji: '', volumeMl: 250, waterRatio: 1.0),
+      DrinkType(id: 'beer', name: 'Beer', emoji: '', volumeMl: 330, waterRatio: 2.0),
+    ];
 
   static DrinkType? byId(String id) {
     for (final d in all) {

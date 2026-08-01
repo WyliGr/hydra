@@ -17,44 +17,44 @@ class StatsScreen extends StatelessWidget {
         final goal = state.dailyGoalMl;
         final avg = days.isEmpty
             ? 0
-            : (days.fold(0, (sum, d) => sum + d.totalMl) / days.length).round();
+            : (days.fold(0, (sum, d) => sum + d.totalMl) / days.length)
+                .round();
         final bestDay = days.isEmpty
             ? 0
             : days.map((d) => d.totalMl).reduce((a, b) => a > b ? a : b);
         final daysHitGoal = days.where((d) => d.totalMl >= goal).length;
 
         return Scaffold(
+          backgroundColor: HydraTheme.background,
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Stats',
-                    style: TextStyle(
-                      color: HydraTheme.textPrimary,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  // Header
+                  Text('STATS', style: HydraTheme.displayMedium),
+                  const SizedBox(height: 8),
+                  const Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: HydraTheme.border,
                   ),
+                  const SizedBox(height: 8),
+                  Text('7-DAY OVERVIEW', style: HydraTheme.label),
                   const SizedBox(height: 24),
 
-                  // Summary cards
+                  // Summary cards — flat black tiles, 1px border
                   Row(
                     children: [
                       _StatCard(
-                        label: 'Moyenne',
-                        value: FormatUtil.ml(avg),
-                        icon: Icons.trending_up,
-                        color: HydraTheme.primary,
+                        label: 'AVG / DAY',
+                        value: FormatUtil.ml(avg).toUpperCase(),
                       ),
                       const SizedBox(width: 12),
                       _StatCard(
-                        label: 'Meilleur',
-                        value: FormatUtil.ml(bestDay),
-                        icon: Icons.emoji_events,
-                        color: HydraTheme.success,
+                        label: 'BEST',
+                        value: FormatUtil.ml(bestDay).toUpperCase(),
                       ),
                     ],
                   ),
@@ -62,46 +62,34 @@ class StatsScreen extends StatelessWidget {
                   Row(
                     children: [
                       _StatCard(
-                        label: 'Jours atteints',
+                        label: 'DAYS HIT',
                         value: '$daysHitGoal/7',
-                        icon: Icons.check_circle,
-                        color: HydraTheme.accent,
                       ),
                       const SizedBox(width: 12),
                       _StatCard(
-                        label: 'Objectif',
-                        value: FormatUtil.ml(goal),
-                        icon: Icons.flag,
-                        color: HydraTheme.warning,
+                        label: 'GOAL',
+                        value: FormatUtil.ml(goal).toUpperCase(),
                       ),
                     ],
                   ),
                   const SizedBox(height: 32),
 
                   // Streak section
-                  const Text(
-                    'Série',
-                    style: TextStyle(
-                      color: HydraTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
+                  NothingDecor.hairlineWithLabel('STREAK'),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
                       _StatCard(
-                        label: 'Série actuelle',
-                        value: '${state.currentStreak} 🔥',
-                        icon: Icons.local_fire_department,
-                        color: HydraTheme.warning,
+                        label: 'CURRENT',
+                        value: '${state.currentStreak}',
+                        valueColor: state.currentStreak > 0
+                            ? HydraTheme.accent
+                            : HydraTheme.textPrimary,
                       ),
                       const SizedBox(width: 12),
                       _StatCard(
-                        label: 'Plus longue',
+                        label: 'LONGEST',
                         value: '${state.longestStreak}',
-                        icon: Icons.emoji_events,
-                        color: HydraTheme.success,
                       ),
                     ],
                   ),
@@ -110,52 +98,49 @@ class StatsScreen extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   // Bar chart
-                  const Text(
-                    '7 derniers jours',
-                    style: TextStyle(
-                      color: HydraTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  NothingDecor.hairlineWithLabel('LAST 7 DAYS'),
                   const SizedBox(height: 16),
                   SizedBox(
                     height: 200,
                     child: BarChart(
                       BarChartData(
                         alignment: BarChartAlignment.spaceAround,
-                        maxY: (bestDay > goal ? bestDay : goal).toDouble() * 1.2,
+                        maxY:
+                            (bestDay > goal ? bestDay : goal).toDouble() * 1.2,
                         barTouchData: BarTouchData(
                           touchTooltipData: BarTouchTooltipData(
                             getTooltipItem: (group, gsum, rod, rsum) {
                               return BarTooltipItem(
-                                FormatUtil.ml(rod.toY.toInt()),
-                                const TextStyle(
+                                _ml(rod.toY.toInt()),
+                                HydraTheme.dataSmall.copyWith(
                                   color: HydraTheme.textPrimary,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
                                 ),
                               );
                             },
                           ),
                         ),
                         titlesData: FlTitlesData(
-                          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          leftTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
                               getTitlesWidget: (value, meta) {
                                 final i = value.toInt();
-                                if (i < 0 || i >= days.length) return const SizedBox();
+                                if (i < 0 || i >= days.length) {
+                                  return const SizedBox();
+                                }
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 8),
                                   child: Text(
-                                    FormatUtil.dayLabel(days[i].date),
-                                    style: const TextStyle(
-                                      color: HydraTheme.textSecondary,
-                                      fontSize: 12,
+                                    FormatUtil.dayLabel(days[i].date)
+                                        .toUpperCase(),
+                                    style: HydraTheme.label.copyWith(
+                                      fontSize: 10,
                                     ),
                                   ),
                                 );
@@ -170,12 +155,15 @@ class StatsScreen extends StatelessWidget {
                           getDrawingHorizontalLine: (value) {
                             if (value == goal.toDouble()) {
                               return const FlLine(
-                                color: HydraTheme.warning,
-                                strokeWidth: 1.5,
-                                dashArray: [5, 5],
+                                color: HydraTheme.accent,
+                                strokeWidth: 1,
+                                dashArray: [4, 4],
                               );
                             }
-                            return const FlLine(color: Colors.transparent, strokeWidth: 0);
+                            return const FlLine(
+                              color: Colors.transparent,
+                              strokeWidth: 0,
+                            );
                           },
                         ),
                         borderData: FlBorderData(show: false),
@@ -188,12 +176,11 @@ class StatsScreen extends StatelessWidget {
                             barRods: [
                               BarChartRodData(
                                 toY: d.totalMl.toDouble(),
-                                color: reached ? HydraTheme.success : HydraTheme.primary,
-                                width: 28,
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(6),
-                                  topRight: Radius.circular(6),
-                                ),
+                                color: reached
+                                    ? HydraTheme.textPrimary
+                                    : HydraTheme.textTertiary,
+                                width: 4,
+                                borderRadius: BorderRadius.zero,
                               ),
                             ],
                           );
@@ -201,40 +188,45 @@ class StatsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _LegendDot(color: HydraTheme.success, label: 'Objectif atteint'),
-                      const SizedBox(width: 16),
-                      _LegendDot(color: HydraTheme.primary, label: 'En dessous'),
+                      _LegendText(label: 'GOAL', isAccent: true),
+                      const SizedBox(width: 24),
+                      _LegendText(label: 'HIT', isAccent: false),
+                      const SizedBox(width: 24),
+                      _LegendText(label: 'MISS', isAccent: false),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
-                  // Today's log timeline
-                  const Text(
-                    'Aujourd\'hui',
-                    style: TextStyle(
-                      color: HydraTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  // Today's log
+                  NothingDecor.hairlineWithLabel("TODAY'S DRINKS"),
                   const SizedBox(height: 12),
-                  ...state.todayDrinks.map((d) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.water_drop, color: HydraTheme.primary, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              '+${FormatUtil.ml(d.volumeMl * d.waterRatio.round())} (dette)',
-                              style: const TextStyle(color: HydraTheme.textSecondary, fontSize: 13),
+                  if (state.todayDrinks.isEmpty)
+                    Text(
+                      'NO ENTRIES',
+                      style: HydraTheme.label.copyWith(
+                        color: HydraTheme.textTertiary,
+                      ),
+                    )
+                  else
+                    ...state.todayDrinks.map((d) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            '+${FormatUtil.ml(d.volumeMl * d.waterRatio.round())}'
+                            '  '
+                            '${d.drinkTypeId.toUpperCase()}'
+                            '${d.compensated ? '  · DONE' : '  · OPEN'}',
+                            style: HydraTheme.bodySecondary.copyWith(
+                              fontSize: 12,
+                              color: d.compensated
+                                  ? HydraTheme.textSecondary
+                                  : HydraTheme.textPrimary,
                             ),
-                          ],
-                        ),
-                      )),
+                          ),
+                        )),
                 ],
               ),
             ),
@@ -243,19 +235,24 @@ class StatsScreen extends StatelessWidget {
       },
     );
   }
+
+  static String _ml(int ml) {
+    if (ml >= 1000) {
+      return '${(ml / 1000).toStringAsFixed(1)}L';
+    }
+    return '${ml}ML';
+  }
 }
 
 class _StatCard extends StatelessWidget {
   final String label;
   final String value;
-  final IconData icon;
-  final Color color;
+  final Color? valueColor;
 
   const _StatCard({
     required this.label,
     required this.value,
-    required this.icon,
-    required this.color,
+    this.valueColor,
   });
 
   @override
@@ -264,27 +261,18 @@ class _StatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: HydraTheme.surfaceLight,
-          borderRadius: BorderRadius.circular(16),
+          color: HydraTheme.background,
+          border: Border.all(color: HydraTheme.border, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 8),
+            Text(label, style: HydraTheme.label),
+            const SizedBox(height: 12),
             Text(
               value,
-              style: const TextStyle(
-                color: HydraTheme.textPrimary,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            Text(
-              label,
-              style: const TextStyle(
-                color: HydraTheme.textSecondary,
-                fontSize: 12,
+              style: HydraTheme.dataMedium.copyWith(
+                color: valueColor ?? HydraTheme.textPrimary,
               ),
             ),
           ],
@@ -294,24 +282,25 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _LegendDot extends StatelessWidget {
-  final Color color;
+class _LegendText extends StatelessWidget {
   final String label;
-  const _LegendDot({required this.color, required this.label});
+  final bool isAccent;
+  const _LegendText({required this.label, required this.isAccent});
 
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          width: 8,
+          height: 1.5,
+          color: isAccent ? HydraTheme.accent : HydraTheme.textTertiary,
         ),
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(color: HydraTheme.textSecondary, fontSize: 12),
+          style: HydraTheme.label.copyWith(fontSize: 10),
         ),
       ],
     );
@@ -325,10 +314,13 @@ class _StreakGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (history.isEmpty) {
-      return const Text(
-        'Pas encore d\'historique.',
-        style: TextStyle(color: HydraTheme.textSecondary, fontSize: 13),
+      Text(
+        'NO HISTORY',
+        style: HydraTheme.label.copyWith(
+          color: HydraTheme.textTertiary,
+        ),
       );
+      return const SizedBox.shrink();
     }
 
     final now = DateTime.now();
@@ -337,39 +329,47 @@ class _StreakGrid extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '30 derniers jours',
-          style: TextStyle(
-            color: HydraTheme.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+        Text(
+          '30 DAYS',
+          style: HydraTheme.label.copyWith(fontSize: 10),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         LayoutBuilder(
           builder: (context, constraints) {
             const cols = 10;
-            const spacing = 4.0;
-            final cellSize = (constraints.maxWidth - spacing * (cols - 1)) / cols;
+            const spacing = 6.0;
+            final cellSize =
+                (constraints.maxWidth - spacing * (cols - 1)) / cols;
             return Wrap(
               spacing: spacing,
               runSpacing: spacing,
               children: List.generate(history.length, (i) {
                 final hit = history[i];
-                final day = today.subtract(Duration(days: history.length - 1 - i));
+                final day =
+                    today.subtract(Duration(days: history.length - 1 - i));
                 return Tooltip(
-                  message: '${day.day}/${day.month} • ${hit ? 'Objectif atteint' : 'Manqué'}',
+                  message:
+                      '${day.day}/${day.month} • ${hit ? 'HIT' : 'MISS'}',
                   child: Container(
                     width: cellSize,
                     height: cellSize,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: hit ? HydraTheme.success : HydraTheme.surfaceLight,
-                      borderRadius: BorderRadius.circular(4),
                       border: Border.all(
                         color: hit
-                            ? HydraTheme.success.withOpacity(0.6)
-                            : HydraTheme.textSecondary.withOpacity(0.2),
-                        width: 0.5,
+                            ? HydraTheme.textPrimary
+                            : HydraTheme.borderStrong,
+                        width: 1,
+                      ),
+                    ),
+                    child: Container(
+                      width: 4,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: hit
+                            ? HydraTheme.textPrimary
+                            : HydraTheme.textTertiary,
+                        shape: BoxShape.circle,
                       ),
                     ),
                   ),
@@ -378,13 +378,13 @@ class _StreakGrid extends StatelessWidget {
             );
           },
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            _LegendDot(color: HydraTheme.success, label: 'Atteint'),
+            _LegendText(label: 'HIT', isAccent: false),
             const SizedBox(width: 12),
-            _LegendDot(color: HydraTheme.surfaceLight, label: 'Manqué'),
+            _LegendText(label: 'MISS', isAccent: false),
           ],
         ),
       ],

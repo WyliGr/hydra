@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../utils/theme.dart';
 
-/// Animated water bottle that fills up based on progress.
+/// Wireframe water bottle with a dot-matrix fill — Nothing OS aesthetic.
+/// Dots become denser as progress grows; at 100% the dots turn red.
 class WaterBottle extends StatefulWidget {
   final double progress; // 0.0 to 1.0
   final int currentMl;
@@ -53,78 +54,54 @@ class _WaterBottleState extends State<WaterBottle>
     super.dispose();
   }
 
-  Color get _waterColor {
-    if (widget.debtMl > 0 && widget.currentMl < widget.goalMl) {
-      return HydraTheme.warning; // amber when in debt
-    }
-    if (widget.progress >= 1.0) {
-      return HydraTheme.success; // green when complete
-    }
-    return HydraTheme.primary;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 180,
-      height: 280,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Bottle outline
-          CustomPaint(
-            size: const Size(180, 280),
-            painter: _BottlePainter(
-              fillProgress: _fillAnimation.value,
-              waterColor: _waterColor,
-            ),
-          ),
-          // ML text overlay
-          Positioned(
-            top: 120,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${(widget.progress * 100).round()}%',
-                  style: const TextStyle(
-                    color: HydraTheme.textPrimary,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                  ),
+    return AnimatedBuilder(
+      animation: _fillAnimation,
+      builder: (context, _) {
+        return SizedBox(
+          width: 180,
+          height: 280,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              CustomPaint(
+                size: const Size(180, 280),
+                painter: _BottleDotPainter(
+                  fillProgress: _fillAnimation.value,
+                  debtMl: widget.debtMl,
+                  currentMl: widget.currentMl,
+                  goalMl: widget.goalMl,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${_fmtMl(widget.currentMl)} / ${_fmtMl(widget.goalMl + widget.debtMl)}',
-                  style: const TextStyle(
-                    color: HydraTheme.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                if (widget.debtMl > 0) ...[
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: HydraTheme.warning.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '+${_fmtMl(widget.debtMl)} dette',
-                      style: const TextStyle(
-                        color: HydraTheme.warning,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
+              ),
+              // Data overlay
+              Positioned(
+                top: 130,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _fmtMl(widget.currentMl),
+                      style: HydraTheme.dataLarge.copyWith(
+                        color: widget.progress >= 1.0
+                            ? HydraTheme.accent
+                            : HydraTheme.textPrimary,
                       ),
                     ),
-                  ),
-                ],
-              ],
-            ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '/ ${_fmtMl(widget.goalMl + widget.debtMl)}',
+                      style: HydraTheme.dataSmall.copyWith(
+                        color: HydraTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -133,15 +110,22 @@ class _WaterBottleState extends State<WaterBottle>
       final l = ml / 1000;
       return '${l.toStringAsFixed(1)}L';
     }
-    return '${ml}ml';
+    return '${ml}ML';
   }
 }
 
-class _BottlePainter extends CustomPainter {
+class _BottleDotPainter extends CustomPainter {
   final double fillProgress;
-  final Color waterColor;
+  final int debtMl;
+  final int currentMl;
+  final int goalMl;
 
-  _BottlePainter({required this.fillProgress, required this.waterColor});
+  _BottleDotPainter({
+    required this.fillProgress,
+    required this.debtMl,
+    required this.currentMl,
+    required this.goalMl,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -149,80 +133,94 @@ class _BottlePainter extends CustomPainter {
     final h = size.height;
     final centerX = w / 2;
 
-    // Bottle path — narrow neck, wide body
+    // Bottle path — narrow neck, wide body (wireframe only)
     final bottlePath = Path()
-      ..moveTo(centerX - 25, 10) // top left of cap area
-      ..lineTo(centerX - 25, 35) // neck left
-      ..quadraticBezierTo(centerX - 35, 50, centerX - 45, 65) // shoulder
-      ..lineTo(centerX - 45, h - 30) // body left
-      ..quadraticBezierTo(centerX - 45, h - 10, centerX - 25, h - 10) // bottom left curve
-      ..lineTo(centerX + 25, h - 10) // bottom right
-      ..quadraticBezierTo(centerX + 45, h - 10, centerX + 45, h - 30) // bottom right curve
-      ..lineTo(centerX + 45, 65) // body right
-      ..quadraticBezierTo(centerX + 35, 50, centerX + 25, 35) // shoulder right
-      ..lineTo(centerX + 25, 10) // neck right
+      ..moveTo(centerX - 22, 8)
+      ..lineTo(centerX - 22, 32)
+      ..quadraticBezierTo(centerX - 32, 48, centerX - 42, 64)
+      ..lineTo(centerX - 42, h - 30)
+      ..quadraticBezierTo(centerX - 42, h - 12, centerX - 24, h - 12)
+      ..lineTo(centerX + 24, h - 12)
+      ..quadraticBezierTo(centerX + 42, h - 12, centerX + 42, h - 30)
+      ..lineTo(centerX + 42, 64)
+      ..quadraticBezierTo(centerX + 32, 48, centerX + 22, 32)
+      ..lineTo(centerX + 22, 8)
       ..close();
 
-    // Bottle outline
-    final outlinePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3
-      ..color = HydraTheme.textSecondary;
-    canvas.drawPath(bottlePath, outlinePaint);
-
-    // Clip to bottle shape for water fill
+    // ── 1) Dot matrix fill (clipped to bottle shape) ──────────
     canvas.save();
     canvas.clipPath(bottlePath);
 
-    // Water fill from bottom
-    final waterHeight = (h - 20) * fillProgress;
-    final waterTop = h - 10 - waterHeight;
+    final fillHeight = (h - 20) * fillProgress.clamp(0.0, 1.0);
+    final fillTopY = h - 12 - fillHeight;
 
-    final waterPath = Path()
-      ..moveTo(0, h - 10)
-      ..lineTo(w, h - 10)
-      ..lineTo(w, waterTop)
-      ..lineTo(0, waterTop)
-      ..close();
+    final dotSize = 2.0;
+    final spacing = 7.0;
+    final isComplete = fillProgress >= 0.999;
 
-    final waterPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = waterColor.withValues(alpha: 0.7);
-    canvas.drawPath(waterPath, waterPaint);
+    // Faint background dot pattern (entire bottle body) — very subtle
+    final bgPaint = Paint()..color = HydraTheme.border.withOpacity(0.6);
+    for (double y = 70; y <= h - 14; y += spacing) {
+      for (double x = centerX - 38; x <= centerX + 38; x += spacing) {
+        if (y < 64) continue;
+        canvas.drawCircle(Offset(x, y), dotSize * 0.6, bgPaint);
+      }
+    }
 
-    // Wavy water surface
-    if (fillProgress > 0.01) {
-      final wavePath = Path()
-        ..moveTo(0, waterTop)
-        ..quadraticBezierTo(w * 0.25, waterTop - 6, w * 0.5, waterTop)
-        ..quadraticBezierTo(w * 0.75, waterTop + 6, w, waterTop)
-        ..lineTo(w, waterTop + 15)
-        ..lineTo(0, waterTop + 15)
-        ..close();
+    // Foreground fill dots: only draw those within the fill zone.
+    final dotColor = isComplete ? HydraTheme.accent : HydraTheme.textPrimary;
+    final dotPaint = Paint()..color = dotColor;
 
-      final wavePaint = Paint()
-        ..style = PaintingStyle.fill
-        ..color = waterColor.withValues(alpha: 0.3);
-      canvas.drawPath(wavePath, wavePaint);
+    final left = centerX - 42 + 4;
+    final right = centerX + 42 - 4;
+    final top = 70.0; // below the neck
+    final bottom = h - 14;
+
+    for (double y = top; y <= bottom; y += spacing) {
+      final inFillZone = y >= fillTopY;
+      for (double x = left; x <= right; x += spacing) {
+        if (y < 64) continue;
+        if (!inFillZone) continue;
+        canvas.drawCircle(Offset(x, y), dotSize, dotPaint);
+      }
     }
 
     canvas.restore();
 
-    // Cap
-    final capPath = Path()
-      ..moveTo(centerX - 22, 5)
-      ..lineTo(centerX - 22, 18)
-      ..lineTo(centerX + 22, 18)
-      ..lineTo(centerX + 22, 5)
-      ..close();
+    // ── 2) Wireframe outline (1.5px white) ────────────────────
+    final outlinePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..color = HydraTheme.textPrimary;
+    canvas.drawPath(bottlePath, outlinePaint);
+
+    // ── 3) Cap outline (no fill) ───────────────────────────────
+    final capRect = Rect.fromLTRB(centerX - 20, 4, centerX + 20, 16);
     final capPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = HydraTheme.primaryDark;
-    canvas.drawPath(capPath, capPaint);
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..color = HydraTheme.textPrimary;
+    canvas.drawRect(capRect, capPaint);
+
+    // Tick marks (industrial scale)
+    final tickPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..color = HydraTheme.textTertiary;
+    for (int i = 1; i < 4; i++) {
+      final ty = h - 12 - ((h - 80) * i / 4);
+      canvas.drawLine(
+        Offset(centerX + 44, ty),
+        Offset(centerX + 50, ty),
+        tickPaint,
+      );
+    }
   }
 
   @override
-  bool shouldRepaint(_BottlePainter oldDelegate) =>
+  bool shouldRepaint(_BottleDotPainter oldDelegate) =>
       oldDelegate.fillProgress != fillProgress ||
-      oldDelegate.waterColor != waterColor;
+      oldDelegate.debtMl != debtMl ||
+      oldDelegate.currentMl != currentMl ||
+      oldDelegate.goalMl != goalMl;
 }

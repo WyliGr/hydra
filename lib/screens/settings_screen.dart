@@ -28,7 +28,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     final p = widget.state.profile;
     _weightController = TextEditingController(text: p.weightKg.toString());
-    _goalController = TextEditingController(text: widget.state.dailyGoalMl.toString());
+    _goalController =
+        TextEditingController(text: widget.state.dailyGoalMl.toString());
     _wakeHour = p.wakeHour;
     _sleepHour = p.sleepHour;
     _autoGoal = p.autoGoal;
@@ -46,204 +47,179 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: HydraTheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Réglages',
-                style: TextStyle(
-                  color: HydraTheme.textPrimary,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                ),
+              Text('SETTINGS', style: HydraTheme.displayMedium),
+              const SizedBox(height: 8),
+              const Divider(
+                height: 1,
+                thickness: 1,
+                color: HydraTheme.border,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
+              Text('PROFILE & DATA', style: HydraTheme.label),
+              const SizedBox(height: 28),
 
-              // Profile section
-              _SectionTitle(title: 'Profil'),
-              const SizedBox(height: 12),
-              _SettingTile(
-                child: SwitchListTile(
-                  title: const Text('Objectif auto', style: TextStyle(color: HydraTheme.textPrimary)),
-                  subtitle: const Text('Calcule selon ton poids (35ml/kg)',
-                      style: TextStyle(color: HydraTheme.textSecondary, fontSize: 12)),
+              // PROFILE
+              NothingDecor.hairlineWithLabel('PROFILE'),
+              const SizedBox(height: 18),
+              _SettingRow(
+                label: 'AUTO GOAL',
+                trailing: _NothingToggle(
                   value: _autoGoal,
-                  activeColor: HydraTheme.primary,
                   onChanged: (v) => setState(() => _autoGoal = v),
                 ),
               ),
-              const SizedBox(height: 10),
-              _SettingTile(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      const Text('Poids', style: TextStyle(color: HydraTheme.textPrimary)),
-                      const Spacer(),
-                      SizedBox(
-                        width: 80,
-                        child: TextField(
-                          controller: _weightController,
-                          keyboardType: TextInputType.number,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: HydraTheme.textPrimary),
-                          decoration: const InputDecoration(
-                            suffixText: 'kg',
-                            suffixStyle: TextStyle(color: HydraTheme.textSecondary),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+              const SizedBox(height: 4),
+              Text(
+                '35ML/KG OF BODY WEIGHT',
+                style: HydraTheme.label.copyWith(
+                  color: HydraTheme.textTertiary,
+                  fontSize: 10,
                 ),
               ),
-              if (!_autoGoal) ...[
-                const SizedBox(height: 10),
-                _SettingTile(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        const Text('Objectif quotidien', style: TextStyle(color: HydraTheme.textPrimary)),
-                        const Spacer(),
-                        SizedBox(
-                          width: 100,
-                          child: TextField(
-                            controller: _goalController,
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: HydraTheme.textPrimary),
-                            decoration: const InputDecoration(
-                              suffixText: 'ml',
-                              suffixStyle: TextStyle(color: HydraTheme.textSecondary),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              const SizedBox(height: 24),
+
+              _UnderlineField(
+                label: 'WEIGHT',
+                controller: _weightController,
+                suffix: 'KG',
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 28),
+
+              if (!_autoGoal)
+                _UnderlineField(
+                  label: 'DAILY GOAL',
+                  controller: _goalController,
+                  suffix: 'ML',
                 ),
-              ],
+
               if (_autoGoal) ...[
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'Objectif recommandé: ${FormatUtil.ml((int.tryParse(_weightController.text) ?? 70) * 35)}',
-                    style: const TextStyle(color: HydraTheme.textSecondary, fontSize: 13),
-                  ),
+                Text(
+                  'GOAL · ${FormatUtil.ml((int.tryParse(_weightController.text) ?? 70) * 35)}/DAY',
+                  style: HydraTheme.dataRed,
                 ),
+                const SizedBox(height: 6),
               ],
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
 
-              // Data section
-              _SectionTitle(title: 'Données'),
-              const SizedBox(height: 12),
-              _SettingTile(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _ExportButton(
-                        icon: Icons.table_chart_outlined,
-                        label: 'Exporter les données (CSV)',
-                        color: HydraTheme.accent,
-                        onPressed: _exportCsv,
-                      ),
-                      const SizedBox(height: 10),
-                      _ExportButton(
-                        icon: Icons.backup_outlined,
-                        label: 'Exporter les données (JSON)',
-                        color: HydraTheme.primary,
-                        onPressed: _exportJson,
-                      ),
-                      const SizedBox(height: 10),
-                      _ExportButton(
-                        icon: Icons.upload_file_outlined,
-                        label: 'Importer un backup (JSON)',
-                        color: HydraTheme.warning,
-                        onPressed: _importJson,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Reminders section
-              _SectionTitle(title: 'Rappels'),
-              const SizedBox(height: 12),
-              _SettingTile(
-                child: SwitchListTile(
-                  title: const Text('Rappels actifs', style: TextStyle(color: HydraTheme.textPrimary)),
+              // REMINDERS
+              NothingDecor.hairlineWithLabel('REMINDERS'),
+              const SizedBox(height: 18),
+              _SettingRow(
+                label: 'ENABLED',
+                trailing: _NothingToggle(
                   value: _remindersEnabled,
-                  activeColor: HydraTheme.primary,
                   onChanged: (v) => setState(() => _remindersEnabled = v),
                 ),
               ),
-              const SizedBox(height: 10),
-              _SettingTile(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Intervalle des rappels', style: TextStyle(color: HydraTheme.textPrimary)),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [1, 2, 3, 4].map((h) {
-                          final selected = _reminderInterval == h;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: GestureDetector(
-                              onTap: () => setState(() => _reminderInterval = h),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: selected ? HydraTheme.primary : HydraTheme.surface,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  '${h}h',
-                                  style: TextStyle(
-                                    color: selected ? Colors.white : HydraTheme.textSecondary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
+              const SizedBox(height: 24),
+              Text('INTERVAL', style: HydraTheme.label),
+              const SizedBox(height: 12),
+              Row(
+                children: [1, 2, 3, 4].map((h) {
+                  final selected = _reminderInterval == h;
+                  final disabled = !_remindersEnabled;
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: disabled
+                            ? null
+                            : () => setState(() => _reminderInterval = h),
+                        child: Container(
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: HydraTheme.background,
+                            border: Border.all(
+                              color: selected
+                                  ? HydraTheme.accent
+                                  : HydraTheme.borderStrong,
+                              width: 1,
                             ),
-                          );
-                        }).toList(),
+                          ),
+                          child: Text(
+                            '${h}H',
+                            style: HydraTheme.dataSmall.copyWith(
+                              color: selected
+                                  ? HydraTheme.accent
+                                  : (disabled
+                                      ? HydraTheme.textTertiary
+                                      : HydraTheme.textPrimary),
+                            ),
+                          ),
+                        ),
                       ),
-                    ],
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 32),
+
+              // DATA
+              NothingDecor.hairlineWithLabel('DATA'),
+              const SizedBox(height: 18),
+              _ExportButton(
+                label: 'EXPORT CSV',
+                onPressed: _exportCsv,
+              ),
+              const SizedBox(height: 10),
+              _ExportButton(
+                label: 'EXPORT JSON BACKUP',
+                onPressed: _exportJson,
+              ),
+              const SizedBox(height: 10),
+              _ExportButton(
+                label: 'IMPORT JSON BACKUP',
+                onPressed: _importJson,
+              ),
+
+              const SizedBox(height: 32),
+
+              // Save button — full width, 1px border, transparent bg
+              GestureDetector(
+                onTap: _save,
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: HydraTheme.background,
+                    border: Border.all(
+                      color: HydraTheme.textPrimary,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    'SAVE',
+                    style: HydraTheme.body.copyWith(
+                      fontSize: 13,
+                      letterSpacing: 2.0,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
 
               const SizedBox(height: 32),
-
-              // Save button
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _save,
-                  icon: const Icon(Icons.check),
-                  label: const Text('Enregistrer'),
+              Center(
+                child: Text(
+                  'HYDRA V0.1.0',
+                  style: HydraTheme.label.copyWith(
+                    color: HydraTheme.textTertiary,
+                    fontSize: 10,
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 24),
-              // About
-              const Text(
-                'Hydra v0.1.0',
-                style: TextStyle(color: HydraTheme.textSecondary, fontSize: 12),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -278,9 +254,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Réglages sauvegardés !'),
-          backgroundColor: HydraTheme.success,
+        SnackBar(
+          content: Text('SETTINGS SAVED', style: HydraTheme.body),
+          backgroundColor: HydraTheme.surfaceElevated,
         ),
       );
     }
@@ -295,16 +271,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       await _exportService.shareCsv();
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Export CSV prêt — choisis une app pour partager.'),
-          backgroundColor: HydraTheme.success,
+        SnackBar(
+          content: Text(
+            'CSV READY — CHOOSE AN APP TO SHARE',
+            style: HydraTheme.body,
+          ),
+          backgroundColor: HydraTheme.surfaceElevated,
         ),
       );
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text('Échec de l\'export CSV : $e'),
-          backgroundColor: HydraTheme.danger,
+          content: Text('CSV EXPORT FAILED: $e', style: HydraTheme.body),
+          backgroundColor: HydraTheme.surfaceElevated,
         ),
       );
     }
@@ -315,16 +294,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       await _exportService.shareJson();
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Backup JSON généré — choisis une app pour le partager.'),
-          backgroundColor: HydraTheme.success,
+        SnackBar(
+          content: Text(
+            'JSON BACKUP READY — CHOOSE AN APP',
+            style: HydraTheme.body,
+          ),
+          backgroundColor: HydraTheme.surfaceElevated,
         ),
       );
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text('Échec du backup JSON : $e'),
-          backgroundColor: HydraTheme.danger,
+          content: Text('JSON BACKUP FAILED: $e', style: HydraTheme.body),
+          backgroundColor: HydraTheme.surfaceElevated,
         ),
       );
     }
@@ -345,17 +327,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            'Import réussi — ${summary.waterLogs} verre(s), '
-            '${summary.drinkLogs} boisson(s) chargée(s).',
+            'IMPORTED — ${summary.waterLogs} WATER, ${summary.drinkLogs} DRINKS',
+            style: HydraTheme.body,
           ),
-          backgroundColor: HydraTheme.success,
+          backgroundColor: HydraTheme.surfaceElevated,
         ),
       );
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text('Échec de l\'import : $e'),
-          backgroundColor: HydraTheme.danger,
+          content: Text('IMPORT FAILED: $e', style: HydraTheme.body),
+          backgroundColor: HydraTheme.surfaceElevated,
         ),
       );
     }
@@ -365,31 +347,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: HydraTheme.surfaceLight,
-        title: const Text(
-          'Importer un backup ?',
-          style: TextStyle(color: HydraTheme.textPrimary),
-        ),
-        content: const Text(
-          'Cette action va REMPLACER toutes tes données actuelles '
-          '(verres bus, boissons, profil, objectif) par celles du backup.\n\n'
-          'Pense à exporter un backup récent avant de continuer.',
-          style: TextStyle(color: HydraTheme.textSecondary),
+        backgroundColor: HydraTheme.surface,
+        title: Text('IMPORT BACKUP?', style: HydraTheme.headline),
+        content: Text(
+          'This will REPLACE all current data '
+          '(water logs, drinks, profile, goal) with the backup.\n\n'
+          'Export a recent backup before continuing.',
+          style: HydraTheme.bodySecondary,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text(
-              'Annuler',
-              style: TextStyle(color: HydraTheme.textSecondary),
-            ),
+            child: Text('CANCEL', style: HydraTheme.label),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: HydraTheme.warning,
-            ),
+          TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Continuer'),
+            child: Text('CONTINUE',
+                style: HydraTheme.label.copyWith(color: HydraTheme.accent)),
           ),
         ],
       ),
@@ -401,35 +375,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: HydraTheme.surfaceLight,
-        title: const Text(
-          'Colle le JSON du backup',
-          style: TextStyle(color: HydraTheme.textPrimary),
-        ),
+        backgroundColor: HydraTheme.surface,
+        title: Text('PASTE BACKUP JSON', style: HydraTheme.headline),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Astuce : utilise « Exporter les données (JSON) » sur '
-                'l\'appareil source, sauvegarde le fichier, puis colle '
-                'son contenu ici.',
-                style: TextStyle(color: HydraTheme.textSecondary, fontSize: 12),
+              Text(
+                'Tip: use "Export JSON Backup" on the source device, '
+                'save the file, then paste its contents here.',
+                style: HydraTheme.bodySecondary.copyWith(fontSize: 12),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: controller,
                 maxLines: 12,
-                style: const TextStyle(
-                  color: HydraTheme.textPrimary,
-                  fontFamily: 'monospace',
-                  fontSize: 12,
-                ),
+                style: HydraTheme.dataSmall.copyWith(fontSize: 12),
                 decoration: const InputDecoration(
                   hintText: '{ "app": "hydra", ... }',
-                  hintStyle: TextStyle(color: HydraTheme.textSecondary),
-                  border: OutlineInputBorder(),
                 ),
               ),
             ],
@@ -438,14 +402,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
-              'Annuler',
-              style: TextStyle(color: HydraTheme.textSecondary),
-            ),
+            child: Text('CANCEL', style: HydraTheme.label),
           ),
-          FilledButton(
+          TextButton(
             onPressed: () => Navigator.of(ctx).pop(controller.text),
-            child: const Text('Restaurer'),
+            child: Text('RESTORE',
+                style: HydraTheme.label.copyWith(color: HydraTheme.accent)),
           ),
         ],
       ),
@@ -455,69 +417,145 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-class _ExportButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onPressed;
+// ── Local widgets ───────────────────────────────────────────
 
-  const _ExportButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onPressed,
-  });
+class _NothingToggle extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _NothingToggle({required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, color: color),
-      label: Text(
-        label,
-        style: TextStyle(color: HydraTheme.textPrimary, fontSize: 14),
-      ),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        side: BorderSide(color: color.withOpacity(0.5)),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onChanged(!value),
+      child: Container(
+        width: 44,
+        height: 22,
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          color: HydraTheme.background,
+          border: Border.all(
+            color: value ? HydraTheme.accent : HydraTheme.borderStrong,
+            width: 1,
+          ),
+        ),
+        child: AnimatedAlign(
+          duration: const Duration(milliseconds: 150),
+          alignment:
+              value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 16,
+            height: 16,
+            color: value
+                ? HydraTheme.accent
+                : HydraTheme.textTertiary,
+          ),
         ),
       ),
     );
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  const _SectionTitle({required this.title});
+class _SettingRow extends StatelessWidget {
+  final String label;
+  final Widget trailing;
+  const _SettingRow({required this.label, required this.trailing});
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: const TextStyle(
-        color: HydraTheme.textSecondary,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.2,
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: HydraTheme.label),
+        trailing,
+      ],
     );
   }
 }
 
-class _SettingTile extends StatelessWidget {
-  final Widget child;
-  const _SettingTile({required this.child});
+class _UnderlineField extends StatelessWidget {
+  final String label;
+  final TextEditingController controller;
+  final String suffix;
+  final ValueChanged<String>? onChanged;
+
+  const _UnderlineField({
+    required this.label,
+    required this.controller,
+    required this.suffix,
+    this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: HydraTheme.surfaceLight,
-        borderRadius: BorderRadius.circular(16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: HydraTheme.label),
+        const SizedBox(height: 6),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                style: HydraTheme.dataLarge.copyWith(fontSize: 26),
+                cursorColor: HydraTheme.textPrimary,
+                onChanged: onChanged,
+                decoration: const InputDecoration(
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(vertical: 4),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                suffix,
+                style: HydraTheme.label.copyWith(
+                  color: HydraTheme.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ExportButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+
+  const _ExportButton({required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onPressed,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: HydraTheme.background,
+          border: Border.all(color: HydraTheme.borderStrong, width: 1),
+        ),
+        child: Text(
+          label,
+          style: HydraTheme.body.copyWith(
+            fontSize: 12,
+            letterSpacing: 1.8,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
-      child: child,
     );
   }
 }
