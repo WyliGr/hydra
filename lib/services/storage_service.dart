@@ -186,6 +186,22 @@ class StorageService {
     );
   }
 
+  // ── Bulk replace (used by import) ───────────────────────────
+
+  Future<void> replaceWaterLogs(List<WaterLog> logs) async {
+    await _prefs.setString(
+      _waterLogsKey,
+      jsonEncode(logs.map((e) => e.toJson()).toList()),
+    );
+  }
+
+  Future<void> replaceDrinkLogs(List<DrinkLog> logs) async {
+    await _prefs.setString(
+      _drinkLogsKey,
+      jsonEncode(logs.map((e) => e.toJson()).toList()),
+    );
+  }
+
   // ── Today helpers ───────────────────────────────────────────
 
   int getTodayWaterMl() {

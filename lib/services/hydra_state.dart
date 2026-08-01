@@ -52,6 +52,14 @@ class HydraState extends ChangeNotifier {
     _streak = _storage.getStreakData();
   }
 
+  /// Re-read everything from storage and notify listeners. Used after
+  /// import-from-backup, where another writer (ExportService) has replaced
+  /// the persisted state out-of-band.
+  void reloadFromStorage() {
+    _refresh();
+    notifyListeners();
+  }
+
   // ── Water actions ───────────────────────────────────────────
 
   Future<void> addWater(int ml, {LogSource source = LogSource.tap}) async {
