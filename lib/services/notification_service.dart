@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
 
@@ -7,8 +9,13 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
+  static bool _initialized = false;
+
   static Future<void> init() async {
+    if (_initialized) return;
+
     tz_data.initializeTimeZones();
+    await _setLocalTimezone();
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
@@ -20,19 +27,43 @@ class NotificationService {
     await _plugin.initialize(
       const InitializationSettings(android: androidSettings, iOS: iosSettings),
     );
+
+    _initialized = true;
+  }
+
+  /// Resolve the device's IANA timezone (e.g. "Europe/London") and configure
+  /// `tz.local`. Falls back to UTC on any failure so scheduling never throws
+  /// a "Location not found" error from the timezone package.
+  static Future<void> _setLocalTimezone() async {
+    try {
+      final name = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(name));
+    } catch (e, st) {
+      debugPrint('NotificationService: failed to resolve local timezone, '
+          'falling back to UTC: $e\n$st');
+      tz.setLocalLocation(tz.UTC);
+    }
   }
 
   /// Request notification permission (Android 13+ / iOS).
   static Future<void> requestPermissions() async {
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
+    try {
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+    } catch (e) {
+      debugPrint('NotificationService.requestPermissions (android) failed: $e');
+    }
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(alert: true, badge: true, sound: true);
+    try {
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+    } catch (e) {
+      debugPrint('NotificationService.requestPermissions (ios) failed: $e');
+    }
   }
 
   /// Schedule a recurring reminder every `intervalHours` hours.
@@ -42,43 +73,48 @@ class NotificationService {
     String title = 'HYDRA',
     String body = 'Time to drink water.',
   }) async {
-    await _plugin.cancelAll();
+    try {
+      await _plugin.cancelAll();
 
-    final now = tz.TZDateTime.now(tz.local);
-    var nextTime = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
-      startHour,
-    );
-
-    if (nextTime.isBefore(now)) {
-      nextTime = nextTime.add(Duration(hours: intervalHours));
-    }
-
-    int id = 0;
-    while (nextTime.hour < 23) {
-      await _plugin.zonedSchedule(
-        id,
-        title,
-        body,
-        nextTime,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-   'hydra_reminders',
-   'Hydra Reminders',
-   icon: '@mipmap/ic_launcher',
-   importance: Importance.defaultImportance,
- ),
-          iOS: DarwinNotificationDetails(),
-        ),
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+      final now = tz.TZDateTime.now(tz.local);
+      var nextTime = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        startHour,
       );
-      id++;
-      nextTime = nextTime.add(Duration(hours: intervalHours));
+
+      if (nextTime.isBefore(now)) {
+        nextTime = nextTime.add(Duration(hours: intervalHours));
+      }
+
+      int id = 0;
+      while (nextTime.hour < 23) {
+        await _plugin.zonedSchedule(
+          id,
+          title,
+          body,
+          nextTime,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'hydra_reminders',
+              'Hydra Reminders',
+              icon: '@mipmap/ic_launcher',
+              importance: Importance.defaultImportance,
+            ),
+            iOS: DarwinNotificationDetails(),
+          ),
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+        );
+        id++;
+        nextTime = nextTime.add(Duration(hours: intervalHours));
+      }
+    } catch (e, st) {
+      debugPrint('NotificationService.scheduleReminder failed: $e\n$st');
+      rethrow;
     }
   }
 
@@ -87,23 +123,31 @@ class NotificationService {
     String title = 'HYDRA',
     required String body,
   }) async {
-    await _plugin.show(
-      999,
-      title,
-      body,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-   'hydra_alerts',
-   'Hydra Alerts',
-   icon: '@mipmap/ic_launcher',
-   importance: Importance.high,
- ),
-        iOS: DarwinNotificationDetails(),
-      ),
-    );
+    try {
+      await _plugin.show(
+        999,
+        title,
+        body,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'hydra_alerts',
+            'Hydra Alerts',
+            icon: '@mipmap/ic_launcher',
+            importance: Importance.high,
+          ),
+          iOS: DarwinNotificationDetails(),
+        ),
+      );
+    } catch (e) {
+      debugPrint('NotificationService.showInstant failed: $e');
+    }
   }
 
   static Future<void> cancelAll() async {
-    await _plugin.cancelAll();
+    try {
+      await _plugin.cancelAll();
+    } catch (e) {
+      debugPrint('NotificationService.cancelAll failed: $e');
+    }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../services/hydra_state.dart';
 import '../services/notification_service.dart';
@@ -67,27 +68,57 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _finish() async {
+    debugPrint('Onboarding: _finish() started');
     final weight = _weightKg ?? 70;
 
-    await widget.state.saveProfile(
-      widget.state.profile.copyWith(
-        weightKg: weight,
-        autoGoal: true,
-      ),
-    );
-
-    if (_remindersEnabled) {
-      await NotificationService.scheduleReminder(
-        startHour: widget.state.profile.wakeHour,
-        intervalHours: _reminderInterval,
+    // Save profile. If storage fails, we still want to complete onboarding
+    // so the user isn't stuck — log the error and continue.
+    try {
+      await widget.state.saveProfile(
+        widget.state.profile.copyWith(
+          weightKg: weight,
+          autoGoal: true,
+        ),
       );
-    } else {
-      await NotificationService.cancelAll();
+      debugPrint('Onboarding: saveProfile OK');
+    } catch (e, st) {
+      debugPrint('Onboarding: saveProfile FAILED: $e\n$st');
     }
 
-    await widget.state.completeOnboarding();
-    if (!mounted) return;
+    // Schedule (or cancel) notifications. A failure here must NOT block
+    // the user from reaching the main app — we swallow the error.
+    try {
+      if (_remindersEnabled) {
+        await NotificationService.scheduleReminder(
+          startHour: widget.state.profile.wakeHour,
+          intervalHours: _reminderInterval,
+        );
+        debugPrint('Onboarding: scheduleReminder OK');
+      } else {
+        await NotificationService.cancelAll();
+        debugPrint('Onboarding: cancelAll OK');
+      }
+    } catch (e, st) {
+      debugPrint('Onboarding: notification step FAILED (continuing): $e\n$st');
+    }
+
+    // Always complete onboarding so the user can reach the main app even
+    // if everything above failed. Wrap in try/catch as a last-resort safety
+    // net; if even this throws, the only remaining path is to call
+    // onCompleted directly so the UI still transitions.
+    try {
+      await widget.state.completeOnboarding();
+      debugPrint('Onboarding: completeOnboarding OK');
+    } catch (e, st) {
+      debugPrint('Onboarding: completeOnboarding FAILED: $e\n$st');
+    }
+
+    if (!mounted) {
+      debugPrint('Onboarding: widget unmounted before onCompleted, aborting');
+      return;
+    }
     widget.onCompleted();
+    debugPrint('Onboarding: onCompleted called');
   }
 
   @override
@@ -116,7 +147,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   const Spacer(),
                   if (_page < 2)
                     GestureDetector(
-                      onTap: _finish,
+                      onTap: () {
+                        // Fire-and-forget: the async work is already wrapped
+                        // in try/catch inside _finish, so we can safely
+                        // discard the returned Future here without producing
+                        // an unhandled async error.
+                        _finish();
+                      },
                       behavior: HitTestBehavior.opaque,
                       child: Padding(
                         padding: const EdgeInsets.all(8),
