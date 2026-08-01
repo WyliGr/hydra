@@ -4,8 +4,8 @@ publish_to: "none"
 version: 0.1.0+1
 
 environment:
-  sdk: ">=3.2.0 <4.0.0"
-  flutter: ">=3.16.0"
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
 
 dependencies:
   flutter:
@@ -13,6 +13,10 @@ dependencies:
 
   # Storage
   shared_preferences: ^2.2.2
+
+  # Sharing / file export
+  share_plus: ^10.1.4
+  path_provider: ^2.1.4
 
   # Widgets
   home_widget: ^0.7.0
