@@ -1,0 +1,38 @@
+name: hydra
+description: "💧 Hydra — Water tracker with drink ratio regulator & homescreen widget."
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Storage
+  shared_preferences: ^2.2.2
+
+  # Widgets
+  home_widget: ^0.7.0
+
+  # Notifications
+  flutter_local_notifications: ^17.0.0
+  timezone: ^0.9.2
+
+  # UI
+  cupertino_icons: ^1.0.6
+  fl_chart: ^0.67.0
+  google_fonts: ^6.2.1
+
+  # Utils
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
