@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/hydra_state.dart';
-import '../models/drink_ratio.dart';
 import '../utils/theme.dart';
 import '../utils/format.dart';
 import '../widgets/water_bottle.dart';

@@ -159,7 +159,7 @@ class _BottleDotPainter extends CustomPainter {
     final isComplete = fillProgress >= 0.999;
 
     // Faint background dot pattern (entire bottle body) — very subtle
-    final bgPaint = Paint()..color = HydraTheme.border.withOpacity(0.6);
+    final bgPaint = Paint()..color = HydraTheme.border.withValues(alpha: 0.6);
     for (double y = 70; y <= h - 14; y += spacing) {
       for (double x = centerX - 38; x <= centerX + 38; x += spacing) {
         if (y < 64) continue;

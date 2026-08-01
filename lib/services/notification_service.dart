@@ -66,12 +66,11 @@ class NotificationService {
         nextTime,
         const NotificationDetails(
           android: AndroidNotificationDetails(
-            'hydra_reminders',
-            'Hydra Reminders',
-            channelName: 'Hydra Reminders',
-            icon: '@mipmap/ic_launcher',
-            importance: Importance.defaultImportance,
-          ),
+   'hydra_reminders',
+   'Hydra Reminders',
+   icon: '@mipmap/ic_launcher',
+   importance: Importance.defaultImportance,
+ ),
           iOS: DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -94,12 +93,11 @@ class NotificationService {
       body,
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'hydra_alerts',
-          'Hydra Alerts',
-          channelName: 'Hydra Alerts',
-          icon: '@mipmap/ic_launcher',
-          importance: Importance.highImportance,
-        ),
+   'hydra_alerts',
+   'Hydra Alerts',
+   icon: '@mipmap/ic_launcher',
+   importance: Importance.high,
+ ),
         iOS: DarwinNotificationDetails(),
       ),
     );
