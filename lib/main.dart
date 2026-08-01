@@ -6,6 +6,7 @@ import 'utils/theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,8 +37,57 @@ class HydraApp extends StatelessWidget {
       title: 'Hydra',
       theme: HydraTheme.dark,
       debugShowCheckedModeBanner: false,
-      home: HydraNav(state: state),
+      home: _RootRouter(state: state),
     );
+  }
+}
+
+class _RootRouter extends StatefulWidget {
+  final HydraState state;
+  const _RootRouter({required this.state});
+
+  @override
+  State<_RootRouter> createState() => _RootRouterState();
+}
+
+class _RootRouterState extends State<_RootRouter> {
+  @override
+  void initState() {
+    super.initState();
+    widget.state.addListener(_onChange);
+  }
+
+  @override
+  void dispose() {
+    widget.state.removeListener(_onChange);
+    super.dispose();
+  }
+
+  void _onChange() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.state.ready) {
+      return const Scaffold(
+        backgroundColor: HydraTheme.surface,
+        body: Center(
+          child: CircularProgressIndicator(color: HydraTheme.primary),
+        ),
+      );
+    }
+
+    if (!widget.state.hasCompletedOnboarding) {
+      return OnboardingScreen(
+        state: widget.state,
+        onCompleted: () {
+          if (mounted) setState(() {});
+        },
+      );
+    }
+
+    return HydraNav(state: widget.state);
   }
 }
 

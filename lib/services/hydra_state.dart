@@ -15,6 +15,7 @@ class HydraState extends ChangeNotifier {
   List<DrinkLog> _todayDrinks = [];
   List<DailyTotal> _last7Days = [];
   UserProfile _profile = const UserProfile();
+  bool _onboardingDone = false;
 
   bool get ready => _ready;
   int get todayWaterMl => _todayWaterMl;
@@ -23,6 +24,7 @@ class HydraState extends ChangeNotifier {
   List<DrinkLog> get todayDrinks => _todayDrinks;
   List<DailyTotal> get last7Days => _last7Days;
   UserProfile get profile => _profile;
+  bool get hasCompletedOnboarding => _onboardingDone;
 
   /// Total goal = base goal + water debt from uncompensated drinks.
   int get effectiveGoalMl => _dailyGoalMl + _waterDebtMl;
@@ -44,6 +46,7 @@ class HydraState extends ChangeNotifier {
     _todayDrinks = _storage.getTodayDrinkLogs();
     _last7Days = _storage.getLast7Days();
     _profile = _storage.getProfile();
+    _onboardingDone = _storage.hasCompletedOnboarding;
   }
 
   // ── Water actions ───────────────────────────────────────────
@@ -102,6 +105,13 @@ class HydraState extends ChangeNotifier {
     if (profile.autoGoal) {
       await _storage.setDailyGoalMl(profile.recommendedDailyMl);
     }
+    _refresh();
+    notifyListeners();
+  }
+
+  /// Complete onboarding — persist flag and trigger refresh.
+  Future<void> completeOnboarding() async {
+    await _storage.setOnboardingDone(true);
     _refresh();
     notifyListeners();
   }

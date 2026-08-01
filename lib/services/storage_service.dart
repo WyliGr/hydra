@@ -10,6 +10,9 @@ class StorageService {
   static const _drinkLogsKey = 'hydra_drink_logs';
   static const _profileKey = 'hydra_profile';
   static const _dailyGoalKey = 'hydra_daily_goal_ml';
+  static const _onboardingDoneKey = 'hydra_onboarding_done';
+  static const _remindersEnabledKey = 'hydra_reminders_enabled';
+  static const _reminderIntervalKey = 'hydra_reminder_interval_hours';
 
   late SharedPreferences _prefs;
 
@@ -100,6 +103,29 @@ class StorageService {
 
   Future<void> setDailyGoalMl(int ml) async {
     await _prefs.setInt(_dailyGoalKey, ml);
+  }
+
+  // ── Onboarding ─────────────────────────────────────────────
+
+  bool get hasCompletedOnboarding =>
+      _prefs.getBool(_onboardingDoneKey) ?? false;
+
+  Future<void> setOnboardingDone(bool done) async {
+    await _prefs.setBool(_onboardingDoneKey, done);
+  }
+
+  // ── Reminder prefs ─────────────────────────────────────────
+
+  bool get remindersEnabled => _prefs.getBool(_remindersEnabledKey) ?? true;
+  int get reminderIntervalHours =>
+      _prefs.getInt(_reminderIntervalKey) ?? 2;
+
+  Future<void> setRemindersEnabled(bool enabled) async {
+    await _prefs.setBool(_remindersEnabledKey, enabled);
+  }
+
+  Future<void> setReminderInterval(int hours) async {
+    await _prefs.setInt(_reminderIntervalKey, hours);
   }
 
   // ── Today helpers ───────────────────────────────────────────
