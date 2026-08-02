@@ -13,9 +13,8 @@ class HydraWidgetProvider : AppWidgetProvider() {
         private const val PREFS_NAME = "HomeWidgetPreferences"
         private const val PREF_PREFIX = "flutter."
 
-        // Action for tap-to-add from widget
         const val ACTION_ADD_WATER = "com.wyligr.hydra.ADD_WATER"
-        private const val ADD_AMOUNT = 250 // 25cl per tap
+        private const val ADD_AMOUNT = 250
     }
 
     override fun onUpdate(
@@ -31,12 +30,10 @@ class HydraWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         if (intent.action == ACTION_ADD_WATER) {
-            // Add water to the shared prefs
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val current = prefs.getInt("${PREF_PREFIX}today_ml", 0)
             prefs.edit().putInt("${PREF_PREFIX}today_ml", current + ADD_AMOUNT).apply()
 
-            // Force update all widgets
             val manager = AppWidgetManager.getInstance(context)
             val ids = manager.getAppWidgetIds(
                 android.content.ComponentName(context, HydraWidgetProvider::class.java)
@@ -66,51 +63,21 @@ class HydraWidgetProvider : AppWidgetProvider() {
 
         val views = RemoteViews(context.packageName, R.layout.hydra_widget)
 
-        // Progress bar
         views.setProgressBar(R.id.widget_progress, 100, progress, false)
+        views.setTextViewText(R.id.widget_amount, "${todayMl}ml / ${effectiveGoal}ml")
+        views.setTextViewText(R.id.widget_percent, "$progress%")
 
-        // Amount text
-        val amountText = "${formatMl(todayMl)} / ${formatMl(effectiveGoal)}"
-        views.setTextViewText(R.id.widget_amount, amountText)
-
-        // Debt indicator
-        if (debtMl > 0 && todayMl < goalMl) {
-            views.setTextViewText(R.id.widget_debt, "+${formatMl(debtMl)} dette")
-            views.setViewVisibility(R.id.widget_debt, android.view.View.VISIBLE)
-        } else {
-            views.setViewVisibility(R.id.widget_debt, android.view.View.GONE)
-        }
-
-        // Title with status
-        if (progress >= 100) {
-            views.setTextViewText(R.id.widget_title, "HYDRA · DONE")
-        } else if (debtMl > 0 && todayMl < goalMl) {
-            views.setTextViewText(R.id.widget_title, "HYDRA · DEBT")
-        }
-
-        // Tap to add water
         val addIntent = Intent(context, HydraWidgetProvider::class.java).apply {
             action = ACTION_ADD_WATER
         }
         val pendingIntent = android.app.PendingIntent.getBroadcast(
             context,
-            0,
+            widgetId,
             addIntent,
             android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
         )
-        views.setOnClickPendingIntent(R.id.widget_progress, pendingIntent)
-        views.setOnClickPendingIntent(R.id.widget_amount, pendingIntent)
+        views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
         appWidgetManager.updateAppWidget(widgetId, views)
-    }
-
-    private fun formatMl(ml: Int): String {
-        return if (ml >= 1000) {
-            val l = ml / 1000.0
-            if (l == l.toInt().toDouble()) "${l.toInt()}L"
-            else String.format("%.1fL", l)
-        } else {
-            "${ml}ml"
-        }
     }
 }

@@ -1,79 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
     android:background="@drawable/hydra_widget_bg"
-    android:gravity="center_vertical">
+    android:gravity="center">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/widget_icon"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:text="💧"
+        android:textSize="28sp" />
 
-        <TextView
-            android:id="@+id/widget_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="HYDRA"
-            android:textColor="#FFFFFF"
-            android:textSize="13sp"
-            android:fontFamily="monospace"
-            android:textStyle="bold"
-            android:letterSpacing="0.2" />
-
-        <TextView
-            android:id="@+id/widget_debt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="#FF2D2D"
-            android:textSize="11sp"
-            android:fontFamily="monospace"
-            android:textStyle="bold"
-            android:letterSpacing="0.1"
-            android:layout_marginStart="8dp"
-            android:visibility="gone" />
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        android:background="#1A1A1A" />
+    <TextView
+        android:id="@+id/widget_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0ml / 2500ml"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:fontFamily="monospace"
+        android:layout_marginTop="6dp" />
 
     <ProgressBar
         android:id="@+id/widget_progress"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:layout_marginTop="14dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginTop="8dp"
         android:max="100"
         android:progress="0"
         android:progressTint="#FF2D2D"
-        android:progressBackgroundTint="#222222" />
+        android:progressBackgroundTint="#1A1A1A" />
 
     <TextView
-        android:id="@+id/widget_amount"
+        android:id="@+id/widget_percent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0ML / 2500ML"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
+        android:text="0%"
+        android:textColor="#808080"
+        android:textSize="12sp"
         android:fontFamily="monospace"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TAP TO ADD 250ML"
-        android:textColor="#666666"
-        android:textSize="9sp"
-        android:fontFamily="monospace"
-        android:letterSpacing="0.2"
-        android:layout_marginTop="2dp" />
+        android:layout_marginTop="6dp" />
 
 </LinearLayout>
