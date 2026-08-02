@@ -154,10 +154,10 @@ class StatsScreen extends StatelessWidget {
                           horizontalInterval: goal.toDouble(),
                           getDrawingHorizontalLine: (value) {
                             if (value == goal.toDouble()) {
-                              return const FlLine(
+                              return FlLine(
                                 color: HydraTheme.accent,
                                 strokeWidth: 1,
-                                dashArray: [4, 4],
+                                dashArray: const [4, 4],
                               );
                             }
                             return const FlLine(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/hydra_state.dart';
+import '../services/accent_color_service.dart';
 import '../models/user_profile.dart';
 import '../utils/theme.dart';
 import '../utils/format.dart';
@@ -108,6 +109,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 6),
               ],
 
+              const SizedBox(height: 28),
+
+              // COLOUR
+              NothingDecor.hairlineWithLabel('COLOUR'),
+              const SizedBox(height: 8),
+              Text(
+                'Pick an accent for streaks, debt, and active toggles.',
+                style: HydraTheme.label.copyWith(
+                  color: HydraTheme.textTertiary,
+                  fontSize: 10,
+                ),
+              ),
+              const SizedBox(height: 18),
+              _AccentColorPicker(
+                selected: AccentColorService.getAccentIndex(),
+                onSelect: (i) async {
+                  await widget.state.setAccentColor(i);
+                  if (mounted) setState(() {});
+                },
+              ),
+              const SizedBox(height: 6),
+              Text(
+                AccentColorService
+                    .presets[AccentColorService.getAccentIndex()]
+                    .name,
+                style: HydraTheme.label.copyWith(
+                  color: HydraTheme.textSecondary,
+                ),
+              ),
               const SizedBox(height: 28),
 
               // REMINDERS
@@ -555,6 +585,58 @@ class _ExportButton extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Horizontal row of accent-color swatches. The currently selected
+/// swatch is wrapped in a white ring; everything else is flat 1px
+/// hairline so the picker reads like the rest of the settings list.
+class _AccentColorPicker extends StatelessWidget {
+  final int selected;
+  final ValueChanged<int> onSelect;
+
+  const _AccentColorPicker({required this.selected, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: Row(
+        children: List.generate(AccentColorService.presets.length, (i) {
+          final preset = AccentColorService.presets[i];
+          final isSelected = i == selected;
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => onSelect(i),
+              child: Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: HydraTheme.background,
+                  border: Border.all(
+                    color: isSelected
+                        ? HydraTheme.textPrimary
+                        : HydraTheme.borderStrong,
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: preset.color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
       ),
     );
   }

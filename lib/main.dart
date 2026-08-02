@@ -126,9 +126,9 @@ class _HydraNavState extends State<HydraNav> {
         children: screens,
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: HydraTheme.background,
-          border: Border(
+          border: const Border(
             top: BorderSide(color: HydraTheme.border, width: 1),
           ),
         ),
@@ -149,7 +149,7 @@ class _HydraNavState extends State<HydraNav> {
                         border: Border(
                           top: BorderSide(
                             color:
-                                active ? HydraTheme.textPrimary : Colors.transparent,
+                                active ? HydraTheme.accent : Colors.transparent,
                             width: 1,
                           ),
                         ),
@@ -158,7 +158,7 @@ class _HydraNavState extends State<HydraNav> {
                         _tabs[i],
                         style: HydraTheme.label.copyWith(
                           color: active
-                              ? HydraTheme.textPrimary
+                              ? HydraTheme.accent
                               : HydraTheme.textTertiary,
                           fontSize: 11,
                           letterSpacing: 2.0,
