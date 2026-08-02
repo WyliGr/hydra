@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Nothing OS design system — monochrome black/white + Nothing Red accent.
+/// Nothing OS design system — monochrome black/white + dynamic accent color.
 /// Industrial, terminal-like, dot matrix aesthetic.
 class HydraTheme {
   // ── Surfaces (pure black OLED-like) ─────────────────────────
@@ -20,12 +20,33 @@ class HydraTheme {
   static const Color textTertiary = Color(0xFF666666);
   static const Color textDisabled = Color(0xFF333333);
 
-  // ── Accent — Nothing Red, used sparingly ────────────────────
-  static const Color accent = Color(0xFFFF2D2D);
-  static const Color accentDim = Color(0xFFB81E1E);
+  // ── Accent — mutable, updated by [AccentColorService] ───────
+  static Color accentColor = const Color(0xFFFF2D2D);
+  static Color accentDimColor = const Color(0xFFB81E1E);
+
+  /// Currently selected accent color. Reads through [accentColor] so
+  /// widgets stay reactive without any wiring.
+  static Color get accent => accentColor;
+
+  /// Dim companion of the selected accent — used for hover / muted
+  /// variants of the same hue.
+  static Color get accentDim => accentDimColor;
+
+  /// Replace the active accent at runtime. Call this once at boot
+  /// (from [HydraState.init]) and again whenever the user picks a new
+  /// swatch in Settings.
+  static void setAccent(Color color, {Color? dim}) {
+    accentColor = color;
+    accentDimColor = dim ?? color;
+  }
 
   // ── Semantic ────────────────────────────────────────────────
-  static const Color debt = Color(0xFFFF2D2D);
+  /// Debt follows the accent color so "outstanding" matches whatever
+  /// hue the user picked.
+  static Color get debt => accent;
+
+  /// Goal stays white — completion is a neutral achievement, not a
+  /// brand-colored signal.
   static const Color goal = Color(0xFFFFFFFF);
 
   // ── Typography (Space Grotesk + Space Mono via google_fonts) ──
@@ -121,7 +142,7 @@ class HydraTheme {
         brightness: Brightness.dark,
         scaffoldBackgroundColor: background,
         canvasColor: background,
-        colorScheme: const ColorScheme.dark(
+        colorScheme: ColorScheme.dark(
           primary: textPrimary,
           onPrimary: background,
           secondary: accent,
@@ -245,7 +266,7 @@ class HydraTheme {
             side: BorderSide(color: borderStrong, width: 1),
           ),
         ),
-        progressIndicatorTheme: const ProgressIndicatorThemeData(
+        progressIndicatorTheme: ProgressIndicatorThemeData(
           color: accent,
           linearTrackColor: border,
           circularTrackColor: border,

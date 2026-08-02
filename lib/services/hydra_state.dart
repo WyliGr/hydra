@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/storage_service.dart';
+import '../services/accent_color_service.dart';
+import '../utils/theme.dart';
 import '../models/water_log.dart';
 import '../models/drink_ratio.dart';
 import '../models/user_profile.dart';
@@ -39,9 +41,17 @@ class HydraState extends ChangeNotifier {
 
   Future<void> init() async {
     await _storage.init();
+    await AccentColorService.init();
+    _applyAccentFromPrefs();
     _refresh();
     _ready = true;
     notifyListeners();
+  }
+
+  void _applyAccentFromPrefs() {
+    final preset =
+        AccentColorService.presets[AccentColorService.getAccentIndex()];
+    HydraTheme.setAccent(preset.color, dim: preset.dimColor);
   }
 
   void _refresh() {
@@ -111,6 +121,17 @@ class HydraState extends ChangeNotifier {
   Future<void> setDailyGoal(int ml) async {
     await _storage.setDailyGoalMl(ml);
     _refresh();
+    notifyListeners();
+  }
+
+  /// Persist and apply a new accent color from [AccentColorService.presets].
+  /// Updates [HydraTheme] immediately so every screen repaints with
+  /// the new hue on the next frame.
+  Future<void> setAccentColor(int index) async {
+    if (index < 0 || index >= AccentColorService.presets.length) return;
+    await AccentColorService.setAccentIndex(index);
+    final preset = AccentColorService.presets[index];
+    HydraTheme.setAccent(preset.color, dim: preset.dimColor);
     notifyListeners();
   }
 
